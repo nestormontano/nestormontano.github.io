@@ -23,5 +23,7 @@ navbar:
       href: https://www.linkedin.com/in/emily-zabor-59b902b7/
 output:
   html_document:
-    theme: paper
+    theme: cosmo
+    include:
+      after_body: ./Partes/footer.html
     css: 'styles.css'
