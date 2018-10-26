@@ -1,8 +1,4 @@
 ---
-title: "Nestor Montano website"
-author: "NM"
-date: "25 de octubre de 2018"
-output: html_document
 ---
 
 ```{r setup, include=FALSE}
