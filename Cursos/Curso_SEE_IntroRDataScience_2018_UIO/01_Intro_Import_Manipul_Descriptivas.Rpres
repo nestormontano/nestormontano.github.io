@@ -1,0 +1,2286 @@
+<style>
+.small-code pre code {
+  font-size: 1em;
+}
+
+.reveal .state-background {
+   background: white;
+   background-image: url(https://nestormontano.github.io/PresentacionesPrueba/Imagenes/topProgrDataScience.png);
+   background-repeat: no-repeat;
+   background-position: center 0.5%;
+   background-size: 65%;
+}
+</style>
+
+
+APRENDIENDO R PARA DATA SCIENCE
+========================================================
+author: Nestor Montaño
+date: Octubre.2018
+autosize: true
+transition: rotate
+font-family: 'Helvetica'
+css: slides-see.css
+<small> 
+Programa de capacitación en Data Science
+Sociedad ecuatoriana de estadística
+</small>
+
+
+
+Preeliminares 
+========================================================
+type: sub-section
+
+
+
+Instalar R
+========================================================
+
+**En windows y Mac**
+- Descargar R desde [CRAN] (http://cran.r-project.org/) 
+- Instalarlo como cualquier otro software
+
+**En Linux (Distribuciones)**
+- Distribuciones basadas en Debian/Ubuntu tienen R en los repositorios oficiales
+- Distribuciones basadas en Fedora/RedHat deben habilitar EPEL para tener R
+- En Debian Estable para tener nuevas versiones se debe utilizar un ["backports"] (http://cran.r-project.org/bin/linux/debian/README)
+
+
+
+
+Instalar RStudio
+========================================================
+
+- Debe estar R ya instalado
+- Descargar según Sistema Operativo [web oficial] (http://www.rstudio.com/products/rstudio/download/)
+- En Windows/Mac es next&next
+- En linux Debian/Ubuntu/Mint se puede instalar desde el .deb y next&next 
+- En linux desde consola hay que seguir las instrucciones de la web oficial
+- En linux Red Hat/CentOS/Fedora tener cuidado con las dependencias
+
+
+
+¿Porqué R?
+========================================================
+
+R 
+- Gratuito
+- Software Libre (Open Source)
+- Flexible
+- Permite integrarse con otros sistemas u aplicaciones
+- Gran cantidad de usuarios y desarrolladores
+- CRAN: +5000 paquetes disponibles
+- La mayoría de U actualmente enseñan análisis con R
+
+
+
+Algo de historia
+========================================================
+
+<small>Mientras S cambiaba de dueño y denominación, Ross Ihaka y Robert Gentleman, decidieron implementar su propio dialecto. Era 1991 cuando estos dos neozelandeses crearon R. Tardaron dos años en anunciarlo públicamente y otros dos años más en licenciarlo bajo GPL. Y posiblemente esta decisión sea la responsable de que a día de hoy R tenga cada vez más repercusión, y sea más fácil encontrar cursos y tutoriales para este lenguaje que para su predecesor.</small>
+
+
+
+¿Qué es R?
+========================================================
+
+Como Lenguaje/entorno 
+- Leguaje Orientado a objeto
+- Parte del lenguaje "S", es simple y eficaz
+- Manipulación de datos
+- Realización de cálculos matriciales
+- Gran facilidad y potencia para creación de gráficos 
+- R ofrece una amplia variedad de técnicas estadísticas y gráficas, además es extensible (¡normalmente las nuevas técnicas se programan primero en R!)
+- Soporte para Linux, Mac y Windows
+
+
+
+Datos sobre R
+========================================================
+
+fuente: [Revolution Analytics] (http://blog.revolutionanalytics.com/2014/04/seven-quick-facts-about-r.html)
+- Saber R implica ser mejor pagado en IT (dice.com, 2014 Ene)
+- Lenguaje "Data Science"  más utilizado después de SQL (O'Reilly, 2014 Ene)
+- Top 15 de todos los lenguajes de programación (rankings RedMonk, 2014 Ene) 
+- Lenguaje "Data Science" que más rápido crece (KDNuggets, 2013 Ago) 
+- #1 de búsqueda en Google para software de análisis (Google Trends, 2014 Mar) 
+- 76% de analistas usa R, 36% lo usa como herramienta principal (2015 Data Science Survey)
+
+
+
+R - Ecosistema
+========================================================
+
+- Paquetes libres y pagados que extienden las capacidades de R
+- Software de análisis basado en R
+- Interfaces gráficas de desarrollo (IDEs)
+- Interfaces gráficas de usuario GUIs 
+- Integración de Bases de datos con R
+- Integración de herramientas de BI con R
+
+
+
+
+R desarrollos, derivados y forks
+========================================================
+
+- [BIOCONDUCTOR](http://www.bioconductor.org/) Herramientas para analizar Genoma
+- [ORACLE R ENTERPRISE](http://www.oracle.com/technetwork/database/database-technologies/r/r-enterprise/overview/index.html) Integra R con Oracle Data Base
+- [Microsoft/Revolution R Open RRO](https://mran.microsoft.com/)Microsoft R Application Network
+- [STATCONN](http://www.statconn.com/) Integra R con MS Excel, Word, etc
+- [RAPPORTER](http://rapporter.net/welcome/en) Reportería y análisis en la nube
+- [RSTUDIO](https://www.rstudio.com/) Desarrollos como RStudio Server, Shiny server y paquetes en general
+- [Revolution Analytics](http://blog.revolutionanalytics.com/) Comprada por Microsoft
+- [pqR](http://www.pqr-project.org/) Pretty quick R
+- Otros: renjin, FastR, CXXR, Riposte, TERR
+
+
+
+
+IDEs & GUIs de R
+========================================================
+
+**IDEs**
+- [Eclipse] (http://lukemiller.org/index.php/2010/04/eclipse-and-statet-a-nice-working-environment-for-r/)
+- [Revolution R Enterprise DevelopR IDE] (http://www.revolutionanalytics.com/revolution-r-enterprise-developr)
+- [RStudio] (http://www.rstudio.com/products/RStudio/)
+- [Emacs] (http://www.gnu.org/software/emacs/)
+- [Tinn-R] (http://nbcgib.uesc.br/lec/software/editores/tinn-r/en)
+
+
+
+IDEs & GUIs de R
+========================================================
+
+**GUIs**
+- [R Commander] (http://socserv.mcmaster.ca/jfox/Misc/Rcmdr/) - GUI Usado en Investigacion de Mercado
+- [RKward] (http://rkward.sourceforge.net/wiki/Main_Page) - En linux
+- [Deducer] (http://www.deducer.org/) - Una GUI basada en java
+- [Rattle] (http://rattle.togaware.com/) - Especializado en DataMining
+- [JGR] (http://www.rforge.net/JGR/) - Java GUI for R
+
+
+
+
+
+
+¿Por qué RStudio?
+========================================================
+
+RStudio, la IDE más usada de R   
+
+- Todo en 1-ventana: Console, Workspace, History, Working directory, Files, Plot, Packages y Help
+- Integracion de la consola de R
+- Ejecutar codigo desde script
+- Resaltado de sintaxis
+- Completado de sintaxis
+- Manejo de proyectos con soporte para Git y Subversion
+- Herramientas para Investigación Reproducible (knitr)
+
+
+
+Recursos
+========================================================
+<small>
+**Web**
+- R Web site oficial www.r-project.org
+- RStudio support https://support.rstudio.com/hc/en-us
+- [CRAN Task Views] (http://cran.r-project.org/web/views/) .- Paquetes agrupados por área de estudio/aplicación
+
+**Dentro de R**
+- Comando ayuda inicial (html): `help.start()`
+- Ayuda sobre un comando: `help('comando')` y `?mean`
+- Ejemplos en la ayuda de un comando: `example('mean')`
+- Busqueda general: `help.search('comando')` y `??mean`
+- Comando/Objeto que contienen: `apropos('comando')` y `find('comando', simple.words= FALSE)`
+</small>
+
+
+
+RStudio
+========================================================
+
+Abrir RStudio
+![Abrir RStudio](Imagenes/Abrir_RStudio.png)
+
+
+
+RStudio - Primera impresion
+========================================================
+
+Interfaz de RStudio se divide en 4 paneles:
+
+![Partes RStudio](Imagenes/Partes_RStudio.JPG)
+
+
+
+RStudio - Primera impresion
+========================================================
+<small>
+1. Script: Pantalla donde se escriben las líneas de código
+2. Environment/History: Pantalla donde se puede observar la data almacenada, los valores determinados.
+3. File/plots/packages/help/viewer: en esta pantalla esta particionada en varias pestañas como:
+  - Files.- Explorador de carpetas y archivos
+  - Plots/Viewer.- Visor de gráficos o aplicaciones
+  - Packages/Ayuda.- Muestra paquetes instalados del R y la ayuda de R
+  - Help.- las ayudas internas del sistema
+4. Consola: Donde se muestra el código ejecutado y el resultado
+</small>
+
+
+Realizar un script en RStudio
+========================================================
+
+- Nuevo script: `ctrl + shift + n`
+- Completado de comando: `tab` , `ctrl + barra espaciadora`
+- Ejecutar selección o linea actual:  `ctrl + enter`
+- Ir al source editor: `ctrl + 1`
+- Ir a la consola: `ctrl + 2`
+
+
+
+Realizar un script en RStudio
+========================================================
+
+- Insertar simbolo de asignación `<-`: `alt + -`
+- Comentar/des-comentar: `ctrl + shift + c`
+- Reformatear linea: `ctrl + i`
+- RStudio permite "plegar" código
+- Crear secciones de código: `ctrl + shift + r` o `#### nombre ####`
+- Saltar a (función o sección): `alt + shift + J`
+- Ir a una función: `ctrl + .`
+
+
+
+
+Proyectos en RStudio
+========================================================
+
+- Carpeta que contiene todos los scripts y archivos .RData y .Rhistory
+- Permite tener nuestros análisis ordenados
+- Al abrir un proyecto antiguo RStudio lo abre con las pestañas que se tenía activas
+- Permite colaboracion utilizando GIT o Subversion
+- Se sugiere tener una estructura interior, por ejemplo:
+  - Scripts, Data, Exports, Info
+
+
+
+Iniciar un Proyecto en RStudio
+========================================================
+
+![Proyecto RStudio](Imagenes/CreateProyect_RSTUDIO.png)
+***
+<small>
+- Nuevo Proyecto.-    Project > New Project > New Directory > Empty Project > Poner nombre al Proyecto (se creará una carpeta con ese nombre) > Create Project
+- En la carpeta del proyecto crear las carpetas: Data, Exports, Scripts, Recursos (Recomendado)
+</small>
+
+
+
+
+
+Manejo de paquetes
+========================================================
+
+- Instalación: `install.packages('nombre_paquete')`
+- Ver paquetes instalados: `installed.packages()`
+- Activar/Cargar: `library('nombre_paquete')`
+- Desactivar/Des-cargar: `detach('package:nombre_paquete')`
+- Paquetes cargados: `search()`
+- RStudio tiene pestaña Packages que permite instalación visual
+
+
+
+
+
+Generalidades
+========================================================
+
+- Case sensitivity (`Abc` es diferente de `abc`)
+- R, aparte de objetos, tiene:
+ - Expresión.- Se evalúa, se imprime y el valor se pierde
+```{r, fig.align='center'}
+  5+5 # Expresión
+```
+ - Asignación.- Evalúa la expresión y guarda el resultado en una variable (no lo imprime)
+```{r, fig.align='center'}
+  a <- 5+5 # Asigna el valor a la variable "a"
+```
+
+
+
+Generalidades
+========================================================
+
+- Comandos se separan por `;` o `enter`
+- Comandos pueden ser agrupados por `{}`
+- Para comentar se usa `#`
+- SAS y SPSS presentan extensos resultados, mientras que en R la salida es mínima (*En R un análisis se realiza mediante una serie de pasos, con resultados intermedios guardados en objetos*)
+
+
+
+
+Asignaciones
+========================================================
+
+- asigna el valor `5` a la variable `a`   :
+  - `a <- 5`
+  - `5 -> a`
+  - `assign("a", 5)`  
+- asigna globalmente el valor `5` a la variable `a`, (dentro de una función `a` seguirá valiendo 5)    
+  - `a <<- 5`
+  -   `5 ->> a` 
+- No se recomiendo usar `a = 5`
+- RStudio - Verificar en la pestaña Environment la variable `a`
+
+
+
+Asignaciones
+========================================================
+
+- Una función de un objeto puede ser asignada al objeto, es decir 
+```{r, fig.align='center'}
+a <- 5 # Expresión
+a
+a <- 2*a
+a
+```
+
+
+
+R como calculadora
+========================================================
+
+```{r, fig.align='center'}
+2 + 3*5
+log((1+2+3)/4) # log natural 
+pi^2 # pi y potencia
+```
+
+
+R como calculadora
+========================================================
+
+```{r, fig.align='center'}
+abs(-2) # valor abosluto 
+factorial(3) # factorial
+floor(5.7) # funcion piso
+```
+
+
+
+Generar secuencias, repeticiones y aleatorios
+========================================================
+
+```{r, fig.align='center'}
+1:10 # secuencia de 1 a 10, de 1 en 1
+seq(from= 0, to= 20, by= 5) # función seq
+seq(from= 5, by= 5, length.out= 5) # función seq
+```
+
+
+
+Generar secuencias, repeticiones y aleatorios
+========================================================
+class: small-code
+```{r, fig.align='center'}
+rep(x= 3, times= 5) # repetir 5 veces el # 3
+runif(n= 10, min= 1, max= 5) # Genera aleatorios uniformes
+rnorm(n= 10, mean= 100, sd= 10) # Genera aleatorios normales
+```
+
+
+
+
+
+Workspace, environments y objetos
+========================================================
+<small>
+- Environment es un conjunto de objetos y un puntero
+- El environment por defecto es el workspace o .GlobalEnv 
+- Acceder a .GlobalEnv: `globalenv()`
+- Objetos en el workspace: `ls()` y `objects()`
+- Para eliminar objetos: `rm`
+- Obtener los objetos de un environment específico: `ls(envir=  name_env)`
+  - ejemplo: `ls(envir=  globalenv())`  
+- El workspace se graba predeterminado con el nombre `.RData`
+- RStudio permite el acceso desde su pestaña "Environment"
+</small>
+
+
+Workspace, environments y objetos
+========================================================
+
+- Guardar workspace `save.image()`
+- Guardar workspace bajo nombre/ruta definida `save.image(file= ruta.RData)`
+- Guardar algunos objetos `save(lista_objetos, file = 'file_name.RData')`
+- Cargar un archivo .RData `load(file = ‘filename.Rdata’)`
+- En Windows/Mac o en Linux con RStudio `load(file = file.choose())` abre una ventana para la selección de archivo a cargar
+
+
+
+Historico de comandos (History)
+========================================================
+
+- En la consola se puede acceder a los comandos anteriores con las flechas del teclado
+- RStudio, abrir un histórico desplegable en la consola: `Ctrl + Up`
+- Obtener el histórico: `history(max.show = 25)`
+  - En la GUI oficial para Windows/Mac abrirá una nueva ventana, en linux se presentará en el mismo terminal
+  - En RStudio `history()` nos lleva a la pestaña "History"
+- Guardar el historico: `savehistory(file = '.Rhistory')` 
+- Cargar el historico desde un archivo: `loadhistory(file = '.Rhistory')` 
+
+
+
+
+
+
+Introducción a los análisis estadísticos
+========================================================
+type: sub-section
+
+
+
+Workflow de un análisis estadístico
+========================================================
+
+```{r, fig.align='center', echo=FALSE}
+   knitr::include_graphics('Imagenes/WorkFlow_dataScience.png' )
+```
+<small>
+- Import: Obtener y entender los datos
+- Tidy: Ordenar los datos de tal manera que sea sencillo transformarlos, sumarizarlo, visualizarlos o realizar un modelo con ellos
+- Transform: Manipular los datos hasta obtener el input que el análisis o técnica estadística necesita
+- Visualise: Realizar el análisis exploratorio de datos
+- Model: Aplicar técnicas estadísticas para el entendimiento del problema o tomar decisiones
+- Comunicate: Tratar de mostrar los resultados de tal forma que el resto del mundo los entienda, usando reportes, gráficos, visualizaciones interactivas, integración con herramientas de BI, web apps, etc. 
+</small>
+
+
+
+Workflow de un análisis estadístico
+========================================================
+
+```{r, fig.align='center', echo=FALSE}
+   knitr::include_graphics('Imagenes/WorkFlow_dataScience.png', )
+```
+<small>
+- Import
+- Tidy  
+**Repetir mientras sea necesario**    
+- **Transforñm: Manipular los datos, obtener el input del modelo**
+- **Visualise: Realizar el análisis exploratorio de datos**
+- **Model: Aplicar técnicas estadísticas**   
+- Comunicate
+</small>
+
+
+
+
+Workflow de un análisis estadístico
+========================================================
+
+- Si bien R puede manejar vectores, matrices, listas, imágenes, información geográfica, etc, a lo largo del presente curso nos centraremos en los objetos de tipo data.frame, puesto que en la mayoría de los casos, se parte de un archivo de excel o spss, query de base de datos, etc para hacer la información.
+
+
+
+
+Importar Datos
+========================================================
+type: sub-section
+
+
+
+
+
+Importar csv
+========================================================
+
+- Desde RStudio (R-base o paquete readr) 
+  Import Dataset > From Text File > Escoger archivo > Abrir > Escribir nombre a la variable > Import
+- Con comando    
+  read.csv( file, sep = "," , dec = "," , stringsAsFactors= FALSE)
+- Para grandes volúmenes de datos usar paquete data.table   
+  fread()
+
+
+
+Importar desde excel
+========================================================
+
+- Copiando desde un archivo de excel abierto  
+  read.table("clipboard", sep="\t", header=TRUE)
+- Desde RStudio  
+  Rstudio > Import Dataset > From Excel > Escoger archivo > Abrir > Escribir nombre a la variable > Import
+- Usando el paquete `openxlsx`  
+  read.xlsx(xlsxFile , sheet , startRow , colNames , skipEmptyRows, rowNames)  
+  data_tiempo_espera <- read.xlsx(xlsxFile = 'Data/Data_Banco.xlsx')  
+- Otros paquetes  
+  `excel.link`, `XLConnect`, `xlsx`, `readxl`, `rio`
+
+
+
+
+Importar desde excel - Openxlsx
+========================================================
+
+- Instalar el paquete `openxlsx`  
+- Activar el paquete `openxlsx`  
+- Para leer se usa el comando read.xlsx(xlsxFile , sheet , startRow , colNames , skipEmptyRows, rowNames)  
+  - Considerar que luego de importado el archivo se debe verificar los tipos de datos
+  
+  
+  
+
+Exportar a excel
+========================================================
+
+- Descargar [Rtools] (https://cran.r-project.org/bin/windows/Rtools/)
+- Instalar Rtools
+  - Se debe escoger "agregar al path"
+  - Si la computadora ya tiene CYGWIN, se tiene un tratamiento especial
+- Usando el paquete `openxlsx`  
+  write.xlsx(x, file, asTable = FALSE, ...)
+- Se puede usar los paquetes `XLConnect`, `xlsx`, etc.
+  
+
+
+
+Importar desde SPSS, SAS, Stata, etc
+========================================================
+
+- Desde RStudio  
+  Rstudio > Import Dataset > From SPSS/SAS/STATA
+- Usando el paquete `foreign`  
+  SAS: read.xport()  
+  SPSS: read.spss()  
+  Stata: read.dta()  
+  Soporta otros formatos
+- Usango el paquete `haven`  
+  SAS: read_sas() y read_xpt()   
+  SPSS: read_sav() y read_por()  
+  Stata: read_dta()   
+- Se puede usar el paquerte `rio`  
+  
+
+
+Exportar a SPSS, SAS, Stata, etc
+========================================================
+
+- Usango el paquete `foreign`    
+  write.foreign(df, datafile, codefile, package = c("SPSS", "Stata", "SAS"), ...)
+- Usango el paquete `haven`  
+  SAS: write_sas()  
+  SPSS: write_sav()  
+  Stata: write_dta()  
+- Se puede usar el paquerte `rio`
+
+
+
+Interacción con Bases de Datos
+========================================================
+
+- Utilizando ODBC `RODBC`   
+  (Recomendado para Microsoft SQL)
+- Utilizando JDBC `RJDBC`   
+  (Usa java DBC)
+- Paquetes para bases específicas  
+  RMySQL, ROracle, RPostgreSQL, RSQLite, mongolite, RMongo, MonetDB.R, rmongodb
+
+
+ 
+Otros
+========================================================
+
+- GIS sistemas de información geográfica con `rgal` y `raster`
+- GoogleSpreadSheets con `googlesheets`
+- Archivos Open Document Spreadsheets con `readODS`
+- JSON data con `rjson` o `jsonlite` o `RJSONIO`
+
+
+
+
+Ejemplo: Data de transacciones bancarias
+========================================================
+
+El Banco del Pacífico requiere mejorar los tiempos de atención al cliente en ventanilla, para ello ha recolectado esta información anónimamente para cada cajero y transacción realizada.   
+
+Le suministran un excel con dos hojas:   
+
+1. Tiene los datos de las transacciones, columnas: Sucursal, Cajero, ID_Transaccion, Transaccion, Tiempo_Servicio_seg, Nivel de satisfacción, Monto de la transaccion. 
+2. Otra hoja que indica si en la sucursal se ha puesto o no el nuevo sistema.
+
+
+
+Ejemplo: Data de transacciones bancarias
+========================================================
+
+**Revisar archivo de excel: Data_Banco.xlsx**   
+
+Crear un proyecto en RStudio, con las carpetas Data, Exports, etc    
+
+Poner en la carpeta Data, el excel suministrado
+
+
+
+
+Ejemplo - Importar
+========================================================
+
+```{r, fig.align='center'}
+# Cargar la libreria a utilizar
+library(openxlsx)
+# Leer el archivo de excel y asignarlo al objeto data_banco
+data_banco <- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data")
+data_sucursal <- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data_Sucursal")
+```
+
+
+
+Ejemplo - Importar
+========================================================
+
+Bien, se han creado dos objetos en nuestro 'environment', entendamos un poco las estructuras de datos para poder explorar estos objetos
+
+
+
+
+Estructuras de datos ú Objetos
+========================================================
+type: sub-section
+
+
+
+
+
+Estructuras de datos ú Objetos
+========================================================
+- Vector
+- Matriz
+- Data.frame
+- Serie de Tiempo
+- Data.table
+
+
+
+Vectores
+========================================================
+- En R no existen escalares, sino vectores de dim = 1
+```{r, fig.align='center'}
+x <- 1 
+is.vector(x)
+```
+- Los vectores se crean con la función `c()`
+```{r, fig.align='center'}
+x <- c(11, 12, 13, 14) # crea x
+x  # presenta x
+```
+
+
+
+Vectores
+========================================================
+- concatenar vectores
+```{r, fig.align='center'}
+z <- c('a', 'b', 'c') # crea z
+z  # presenta z
+y <- c(x, 21, 31, x) # crea y
+y  # presenta y
+```
+
+
+
+Vectores
+========================================================
+- Repetir vectores
+```{r, fig.align='center'}
+rep(z, times=5) # repetir todo el vector 5 veces
+rep(z, each=5)  # repetir cada elemento 5 veces
+```
+
+
+
+Vectores
+========================================================
+- Operaciones entre vectores
+```{r, fig.align='center'}
+x # presenta x
+y <- c(10, 20, 30, 40) # Crea y
+x + 3*y - 1
+```
+
+
+
+
+
+Data.frames
+========================================================
+
+- Data.frame es una lista de vectores, cumple:
+  - Las componentes son vectores
+  - Cada vector puede se de un tipo de dato distinto
+  - Cada elemento, columna es una variable
+  - Las columnas tienen el mismo largo
+- Se podría decir que un data.frame es como una tabla en una hoja de excel
+
+
+
+
+
+Data.frames
+========================================================
+Crear un data.frame
+```{r, fig.align='center'}
+Nombre <- c('Ana', 'Berni', 'Carlos')
+Edad <- c(20,19,20)
+Ciudad <- factor(c('Gye', 'Uio', 'Cue'))
+df_1  <- data.frame(Nombre, Edad, Ciudad)
+df_1
+```
+
+
+
+Data.frames
+========================================================
+Crear un data.frame
+```{r, fig.align='center'}
+df_2  <- data.frame( a= Nombre, b= Edad, c= Ciudad)
+df_2
+```
+
+
+
+Data.frames
+========================================================
+Crear un data.frame
+```{r, fig.align='center'}
+df_3  <- data.frame( Nombre= c('Ana', 'Berni', 'Carlos'), 
+                     Edad = c(20,19,20), 
+                     Ciudad= factor(c('Gye', 'Uio', 'Cue')) )
+df_3
+```
+
+
+
+
+Data.frames
+========================================================
+Rownames
+```{r, fig.align='center'}
+rownames(df_3) <- paste('id_',1:3,sep='')
+df_3
+```
+
+
+
+Data.frames
+========================================================
+Modificar nombre de las variables
+```{r, fig.align='center'}
+names(df_3) <- c('Name', 'Age', 'City')
+df_3
+```
+
+
+
+Data.frames
+========================================================
+Visualizar primeras filas
+```{r, fig.align='center'}
+head(df_3, n=2)
+```
+
+
+
+Data.frames
+========================================================
+Visualizar últimas filas
+```{r, fig.align='center'}
+tail(df_3, n=2)
+```
+
+
+
+
+Data.frames
+========================================================
+Visualizar la estructura    
+`str` permite ver la estructura de cualquier objeto en R.
+
+```{r, fig.align='center'}
+str(df_3)
+```
+
+
+
+
+
+Ejemplo
+========================================================
+class: small-code
+Entonces, ¿qué tipo de estructura hemos importado?   
+R. Un data.frame
+```{r, fig.align='center'}
+str(data_banco)
+```
+
+
+
+
+
+
+Entender los datos
+========================================================
+type: sub-section
+
+
+Entender los datos
+========================================================
+
+Luego de importar se debe entender los datos   
+- ¿Qué representa cada columna?
+- ¿Qué tipo de dato debería tener cada columna?
+- ¿Qué granularidad o atomicidad tiene la data?
+- Si es que se tiene varios conjuntos de datos ¿Cómo se relacionan los datos?
+- A qué periodo de tiempo corresponde la data
+- Muchas veces se obtiene la información desde una base de datos y por tanto toca entender la base y el query que genera los datos
+
+
+
+Ejemplo - Entender los datos
+========================================================
+
+Podríamos ver las primeras filas
+```{r, fig.align='center'}
+# ver las primeras 5 filas
+head(data_sucursal, n = 5)
+```
+
+
+Ejemplo - Entender los datos
+========================================================
+
+Listar los nombres de las columnas 
+```{r, fig.align='center'}
+# Listar los nombres de las columnas 
+names(data_banco)
+names(data_sucursal)
+```
+
+
+
+
+Tipos de datos
+========================================================
+class: small-code
+Tipos datos en R
+
+```{r, fig.align='center'}
+1  # Entero
+3.5  # Numérico
+im <- 3.5 - 8i # Complejo
+Im(im) # Parte imaginaria
+Re(im) # Parte real
+
+```
+
+
+
+Tipos de datos
+========================================================
+```{r, fig.align='center'}
+'a'  # Caracter
+fecha <- lubridate::ymd("2010-01-01") # Fecha
+data_serie <- ts(1:24, start = 2014) # Serie de tiempo
+data_serie
+```
+
+
+
+
+
+Tipos de datos - factor
+========================================================
+- Util para tipos de datos ordinales
+- x: es el vector de información 
+- levels: los niveles del factor labels: nombre de los niveles 
+- El factor puede tener un orden específico
+```{r, fig.align='center'}
+# Crear un factor ordenado
+data_factor  <- factor(x= c('alto', 'bajo', 'alto', 'alto'), levels = c('bajo', 'mediano', 'alto'))
+data_factor # Mostrar el factor
+```
+
+
+
+
+Tipos de datos
+========================================================
+Datos lógicos y valores perdidos
+
+```{r, fig.align='center'}
+TRUE  # LOGICO
+FALSE # LOGICO
+NA    # No disponible, perdido
+```
+Nota: Los `NA` requieren un tratamiento especial
+
+
+
+Tipos de datos
+========================================================
+Casos especiales
+
+```{r, fig.align='center'}
+1/0   # Infinito
+-1/0   # Infinito negativo
+Inf/Inf # No un Numero
+```
+
+
+Tipos de datos
+========================================================
+
+Qué creen que resulte de lo siguiente?
+```{r, eval= FALSE}
+(0:3)^Inf
+```
+
+
+Tipos de datos
+========================================================
+
+Qué creen que resulte de lo siguiente?
+```{r, fig.align='center'}
+0:3 # es una secuencia
+(0:3)^Inf  # ahora se eleva cada elemnto a Inf
+```
+
+
+
+
+Tipos de variables 
+========================================================
+Tipos de variables en un estudio y su correspondencia en R
+
+```{r, fig.align='center', echo=FALSE}
+   knitr::include_graphics('Imagenes/TiposVariable.png', )
+```
+
+
+
+
+Tipos de datos
+========================================================
+class: small-code
+Probar si el objeto es de un tipo de datos
+
+```{r, fig.align='center'}
+is.numeric(fecha)
+is.integer(x)
+is.character(data_factor)
+is.factor(data_factor)
+is.ts(x)
+```
+
+
+
+
+Tipos de datos
+========================================================
+class: small-code
+<small>
+Al importar los datos es posible que no estén en el formato correcto, podemos pasar de un tipo de dato a otro (siempre que sea posible), usando R-base
+</small>
+
+```{r, fig.align='center'}
+as.numeric(x)
+as.integer(im)
+as.character(data_factor)
+as.factor(x)
+```
+
+
+Tipos de datos
+========================================================
+class: small-code
+<small>
+También se puede convertir el tipo de dato usando el paquete *readr* del *tidyverse* (estas funciones son las que se usan automáticamente al importar desde el menú de RStudio).   
+Para datos numéricos tenemos varias funiones, `parse_number` es la menos restrictiva (elimina lo que no sea número y convierte), `parse_integer` y `parse_double` esperan valores en el formato indicado
+</small>
+
+```{r, fig.align='center'}
+library(tidyverse)
+parse_number(c("$1,234.5", "$12.45"))
+parse_double(c("1234.5", "12.45"))
+parse_integer(c("$1,234.5", "$12.45")) # Error
+```
+
+
+
+
+Tipos de datos
+========================================================
+Para datos de tipo carácter 
+
+```{r, fig.align='center'}
+parse_character(data_factor)
+parse_character( 1:4)
+```
+
+
+
+Tipos de datos
+========================================================
+class: small-code
+<small>
+Para datos de tipo factor se requiere especificar los niveles, y si un dato no está en los niveles se muestra un warning 
+</small>
+
+```{r, fig.align='center'}
+parse_factor(c("Alto", "Bajo", "Medio"), levels = c("Alto", "Medio", "Bajo"))
+parse_factor(c("Alto", "Bajo", "Medio bajo"), levels = c("Alto", "Medio", "Bajo"))
+```
+
+
+
+Tipos de datos
+========================================================
+class: small-code
+<small>
+Para datos de tipo fecha tenemos: 
+</small>
+```{r, fig.align='center'}
+parse_date("2010-10-01")
+parse_date("2010/10/01")
+## parse_date("2010/Ene/01") # Error
+parse_date("2010/Ene./01", format = "%Y/%b/%d", locale = locale("es")) # Nótese el locale()
+parse_datetime("2010-10-01 03:45")
+parse_time("1:00 pm")
+```
+
+
+
+
+Entender los datos
+========================================================
+
+Luego de importar se debe entender los datos   
+- ¿Qué representa cada columna?
+- ¿Qué tipo de dato debería tener cada columna?
+- ¿Qué granularidad o atomicidad tiene la data?
+- Si es que se tiene varios conjuntos de datos ¿Cómo se relacionan los datos?
+- A qué periodo de tiempo corresponde la data
+- Muchas veces se obtiene la información desde una base de datos y por tanto toca entender la base y el query que genera los datos
+
+
+
+
+Entender los datos - Ejemplo
+========================================================
+class: small-code
+<small>
+¿Está bien nuestros tipos de datos?      
+...
+</small>
+```{r, fig.align='center'}
+# Ver la estructura del data.frame
+str(data_banco)
+```
+
+
+
+Entender los datos - Ejemplo
+========================================================
+class: small-code
+<small>
+¿Está bien nuestros tipos de datos?   
+Si no, entonces debemos transformarlos, para esto aprenderemos sobre manipulación de datos.
+</small>
+
+```{r, fig.align='center'}
+# Ver la estructura del data.frame
+str(data_banco)
+```
+
+
+
+
+Manipulacion de datos - Basico
+========================================================
+type: sub-section
+
+
+
+
+Manipulacion de datos
+========================================================
+
+R tiene sus comandos predeterminados para manipular datos, esto se conoce como *R Base*, sin embargo existen varios paquetes que simplifican esta tarea, en este curso veremos como hacerlo con el paquete *dplyr* (y *magrittr*) que están dentro del conjunto de paquetes llamado **tidyverse**
+
+```{r, fig.align='center'}
+# Cargar la librería
+library(tidyverse)
+```
+
+
+
+tibbles (un dataframe mejorado): 			
+========================================================
+class: small-code
+<small>
+Tibble es un objeto del paquete dplyr, entre las mejoras que da es que no imprime todo el objeto en pantalla, sino un resumen del mismo.
+</small>
+
+```{r, fig.align='center'}
+# Convertir el data_banco a un tibble
+data_banco <- tbl_df( data_banco) 
+# Muestra data_banco
+data_banco
+```
+
+
+
+
+Seleccionar columnas: 	select()
+========================================================
+class: small-code
+
+Seleccionar las columnas Transaccion, Tiempo_Servicio_seg del data.frame data_banco
+```{r, fig.align='center'}
+# Seleccionar las columnas Transaccion, Tiempo_Servicio_seg del data.frame data_banco
+# Note que como no se asignó, R evalúa la expresión y presenta el resultado
+select( data_banco, Transaccion, Tiempo_Servicio_seg) 
+```
+
+
+
+Operador Pipe: %>%
+========================================================
+class: small-code
+
+El operador Pipe %>% del paquete magrittr permiten que el código sea más legible porque:
+
+- Permite secuencias estructurantes de operaciones de datos de izquierda a derecha (a diferencia de dentro y fuera),
+- Evitando llamadas a funciones anidadas,
+- Minimiza la necesidad de variables locales y definiciones de funciones
+- Facilita agregar pasos en cualquier lugar de la programación
+
+
+
+Operador Pipe: %>%
+========================================================
+class: small-code
+
+Funciona así:
+- `x %>% f` es equivalente a `f(x)`
+- `x %>% f(y)` es equivalente a `f(x, y)`
+- `x %>% f %>% g %>% h` es equivalente a `h(g(f(x)))`
+- `x %>% f(y = nrow(.), z = ncol(.))` es equivalente a `f(x, y = nrow(x), z = ncol(x))`
+- `x %>% {f(y = nrow(.), z = ncol(.))}` is equivalent to `f(y = nrow(x), z = ncol(x))`
+- `%$%` permite seleccionar columas
+
+
+
+Operador Pipe: %>%
+========================================================
+class: small-code
+
+```{r, fig.align='center'}
+library(magrittr)
+data_banco %>% names
+data_banco %>% dim
+data_banco %>% names %>% length 
+length(names(data_banco)) # equivalencia del código anterior
+```
+
+
+Operador Pipe: %>%
+========================================================
+class: small-code
+
+```{r, fig.align='center'}
+data_banco %>% head(, n= 5)
+```
+
+
+
+
+Seleccionar columnas: 	select()
+========================================================
+class: small-code
+<small>
+Seleccionar las columnas Transaccion, Tiempo_Servicio_seg del data.frame data_banco pero usando `%>%`, lo que permite programar como si se escribiese "del data_banco, selecciona las columnas Transaccion y Tiempo_Servicio_seg"
+</small>
+```{r, fig.align='center'}
+# Seleccionar las columnas Transaccion, Tiempo_Servicio_seg del data.frame data_banco
+# Note que como no se asignó, R evalúa la expresión y presenta el resultado
+# Se lee, del data_banco, selecciona las columnas Transaccion y Tiempo_Servicio_seg
+data_banco %>% select( Transaccion, Tiempo_Servicio_seg) 
+```
+
+
+
+Seleccionar columnas y aplicar una función
+========================================================
+class: small-code
+<small>
+Seleccionar la columna Tiempo_Servicio_seg y obtener un boxplot
+</small>
+```{r, fig.align='center'}
+# Seleccionar la columna Tiempo_Servicio_seg y obtener un boxplot
+data_banco %>% select(Tiempo_Servicio_seg)  %>% boxplot
+```
+
+
+
+Seleccionar columnas y aplicar una función
+========================================================
+class: small-code
+<small>
+Seleccionar la columna Tiempo_Servicio_seg y obtener los fivenumbers de Tukey
+</small>
+```{r, fig.align='center'}
+# Seleccionar la columna Tiempo_Servicio_seg y obtener los fivenumbers de Tukey
+data_banco %$% fivenum(Tiempo_Servicio_seg, na.rm= TRUE)
+```
+
+
+
+
+Seleccionar columnas: 	select()
+========================================================
+class: small-code
+<small>
+Seleccionar y ver en el visor de datos de RStudio
+</small>
+```{r, eval=FALSE}
+# Seleccionar y ver en el visor de datos de RStudio
+data_banco %>% select( Transaccion, Tiempo_Servicio_seg) %>% View
+```
+
+
+
+
+Seleccionar columnas: 	select()
+========================================================
+class: small-code
+<small>
+Seleccionar todas las columnas menos Cajero
+</small>
+```{r, eval=FALSE}
+# Seleccionar todas las columnas menos Cajero
+data_banco %>% select( -Cajero) %>% View
+```
+
+
+
+Seleccionar columnas: 	select()
+========================================================
+class: small-code
+<small>
+Seleccionar según nombre de la columna/variable. 
+</small>
+
+```{r, eval=FALSE}
+# Seleccionar todas las columnas cuyo nombre contenga el texto "Tra"
+data_banco %>% select( contains("Tra")) %>% View
+# Seleccionar todas las columnas cuyo nombre inicie con "S"
+data_banco %>% select( starts_with("S")) %>% View
+# Seleccionar todas las columnas cuyo nombre finalice con "on"
+data_banco %>% select( ends_with("on")) %>% View
+# Seleccionar todas las columnas cuyo nombre contenga una "r" o un "sa"
+data_banco %>% select( matches("r?sa")) %>% View
+# Más información sobre expresiones regulares usando: ?base::regex
+```
+
+
+
+
+Filtrar/Seleccionar filas: 	filter()
+========================================================
+class: small-code
+<small>
+Filtrar las filas según las condiciones dadas en filter(), pero para esto debemos entender los operadores de relación y lógicos en R
+</small>
+
+
+
+
+Operadores de relación
+========================================================
+class: small-code
+
+```{r, fig.align='center'}
+3 == 4 # Igualdad
+3 != 4 # Desigualdad
+3 > 4  # Mayor que 
+3 <= 4 # Menor igual que
+```
+
+
+
+
+Operadores lógicos
+========================================================
+class: small-code
+
+
+```{r, fig.align='center'}
+! FALSE  # No
+TRUE & FALSE  # Y
+TRUE | FALSE  # O
+xor(TRUE,TRUE) # Ó excluyente
+TRUE & NA # Cuidado especial con los NA
+```
+
+
+
+Operadores lógicos
+========================================================
+class: small-code
+
+```{r, fig.align='center'}
+xor(TRUE,TRUE) # Ó excluyente
+TRUE & NA # Cuidado especial con los NA
+```
+
+
+
+Filtrar/Seleccionar filas: 	filter()
+========================================================
+class: small-code
+<small>
+Filtrar las filas según las condiciones dadas en filter()
+</small>
+
+```{r, eval=FALSE}
+# Filtrar las filas correspondientes a la sucursal 62
+data_banco %>% filter( Sucursal== 62 ) %>% View
+# Filtrar las filas correspondientes a la sucursal 62 y hayan durado más de 120 segundos
+data_banco %>% filter( Sucursal== 62 & Tiempo_Servicio_seg > 120 ) %>% View
+# Filtrar las filas correspondientes a la sucursal 62,  hayan durado 
+# más de 120 segundos y la evaluación a la satisfacción sea Bueno
+data_banco %>% filter( Sucursal== 62 & Tiempo_Servicio_seg > 120 & Satisfaccion== "Muy Bueno") %>% View
+```
+
+
+
+Filtrar filas y seleccionar
+========================================================
+class: small-code
+
+```{r, fig.align='center'}
+# Con el data banco
+# Filtrar las filas correspondientes a la sucursal 85
+# calcular la correlacion entre Tiempo_Servicio_seg y Monto
+data_banco %>% # Operador pipe total
+  filter( Sucursal== 85 ) %$%  # Operador pipe para seleccion de columnas
+  cor(Tiempo_Servicio_seg, as.numeric(Monto))
+```
+
+
+
+
+Ordenar las filas: 		arrange()
+========================================================
+class: small-code
+<small>
+Ordenar las filas según lo expresado en arrange()
+</small>
+
+```{r, eval=FALSE}
+# Ordenar por la satisfaccion
+data_banco %>% arrange( Satisfaccion ) %>% View
+# Ordenar cada Transaccion y dentro de cada transaccion de mayor a menor por tiempo de servicio
+data_banco %>% arrange( Transaccion, desc(Tiempo_Servicio_seg) ) %>% View
+
+```
+
+
+
+Crear o modificar columnas/variables  		mutate()
+========================================================
+Crear una nueva columna con el tiempo en minutos
+
+```{r, fig.align='center'}
+# Crear una nueva columna con el tiempo en minutos
+data_banco %>% mutate(Tiempo_Servicio_Min= Tiempo_Servicio_seg/60)
+```
+
+
+
+
+Crear o modificar columnas/variables  		mutate()
+========================================================
+class: small-code
+<small>
+Crear una nueva columna con el tiempo en minutos
+</small>
+```{r, fig.align='center'}
+# Crear una nueva columna con el tiempo en minutos
+data_banco %>% mutate(Tiempo_Servicio_Min= Tiempo_Servicio_seg/60)
+```
+
+
+Crear o modificar columnas/variables  		mutate()
+========================================================
+class: small-code
+<small>
+Crear una nueva columna con el tiempo en minutos
+</small>
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=TRUE, paged.print=FALSE}
+# Crear una nueva columna con el tiempo en minutos
+data_banco %>% mutate(Tiempo_Servicio_Min= Tiempo_Servicio_seg/60)
+```
+
+<small>
+**Nótese que no se asignó, el objeto data_banco no tiene la columna Tiempo_Servicio_Min**
+</small>
+
+
+
+
+Crear o modificar columnas/variables  		mutate()
+========================================================
+class: small-code
+<small>
+Crear una nueva columna con el tiempo en minutos
+</small>
+```{r, fig.align='center'}
+# Crear una nueva columna con el tiempo en minutos
+data_banco <- data_banco %>%
+  mutate(Tiempo_Servicio_Min= Tiempo_Servicio_seg/60)
+# Mostrar
+data_banco
+```
+
+
+
+
+Nuevas columnas transmute()
+========================================================
+class: small-code
+<small>
+Para conservar sólamente las nuevas columnas se usa  transmute()
+</small>
+
+```{r, fig.align='center'}
+# Crear una nueva columna con el tiempo en minutos
+data_banco %>%
+  transmute(Tiempo_Servicio_Min= Tiempo_Servicio_seg/60)
+```
+
+
+
+
+
+
+Ejemplo - Manipulacion de datos
+========================================================
+class: small-code
+<small>
+Lo primero que necesitamos es corregir los tipos de datos, nótese que *Monto* tiene una mezcla de "," y ".".
+</small>
+
+```{r, fig.align='center'}
+data_banco <- data_banco %>%
+  mutate( Monto= str_replace(Monto, pattern = ",", replacement = ".") ) %>%
+  mutate(Sucursal= parse_character(Sucursal),
+         Cajero = parse_character(Cajero),
+         Satisfaccion = parse_factor(Satisfaccion, 
+                                     levels= c('Muy Malo', 'Malo', 'Regular', 'Bueno', 'Muy Bueno')),
+         Monto= parse_number(Monto, locale = locale(decimal_mark = "."))) 
+```
+
+
+
+
+
+
+
+Ejemplo - Explorar los datos
+========================================================
+
+Con los datos corregidos, podemos empezar a explorar, para ello además de poder seleccionar columnas o filtrar filas, debemos poder calcular medidas estadísticas que nos permitan entender nuestros datos
+
+
+
+
+Estadística descriptiva - Estadisticos|Medidas
+========================================================
+type: sub-section
+
+
+
+Medias de Tendencia Central
+========================================================
+Media.- Promedio de los valores  
+- Se la puede entender como el punto de equilibrio 
+- Muy sensible a valores aberrantes
+- En R: mean(x, na.rm= TRUE)
+
+
+Media Acotada.- Promedio de los valores, pero quitando un porcentaje de valores extremos.
+- Es menos sensible a valores aberrantes
+- Se puede perder información importante
+- En R: mean(x, na.rm= TRUE, trim)
+
+
+
+Medias de Tendencia Central
+========================================================
+Mediana.- Punto medio de los valores una vez que se han ordenado de menor a mayor o de mayor a menor.
+- Valor importante pero poco usado
+- No es sensible a valores aberrantes
+- En R: median(x, na.rm= TRUE)
+
+
+Media Ponderada.- Promedio de los valores, pero asignando un peso diferente a cada valor.
+- Normalmente se utiliza cuando se tiene datos agrupados
+- Es también sensible a valores aberrantes
+- En R: weighted.mean(x, w, ..., na.rm = TRUE)
+
+
+
+
+Medias de Tendencia Central
+========================================================
+Entendiendo media vs mediana
+
+![media vs mediana](Imagenes/Media_vs_Mediana.JPG)
+
+
+
+
+Medias de Tendencia Central
+========================================================
+Moda.- Valor de la observación que aparece con mayor frecuencia.
+- Mejor análisis se obtiene con una tabla de frecuencias
+- En R:
+  - library('modeest')
+  - mlv(x)
+
+
+
+
+
+Medias de Tendencia Central
+========================================================
+class: small-code
+Calcular las medidas de Tendencia central para la data de Banco 
+
+```{r, fig.align='center'}
+# Media
+# mean(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+data_banco %$% mean(Tiempo_Servicio_seg, na.rm = TRUE)
+# Media acotada al 10%
+data_banco %$% mean(Tiempo_Servicio_seg, trim = 0.05, na.rm = TRUE)
+# Mediana
+data_banco %$% median(Tiempo_Servicio_seg, na.rm = TRUE)
+```
+
+
+Medias de Tendencia Central
+========================================================
+Calcular las medidas de Tendencia central para la data de Banco 
+
+```{r, fig.align='center'}
+# Cargar paquete
+library('modeest')
+# Moda
+mlv(data_banco$Tiempo_Servicio_seg)
+```
+
+
+
+
+Medias de Posición
+========================================================
+class: small-code
+<small>
+- Min y Max
+  - En R, min(x, na.rm = TRUE), max(x, na.rm = TRUE)
+- Cuartiles.- Dividen a un conjunto de observaciones en cuatro partes iguales
+  - El segundo cuartil es la mediana
+  - En R quantile(x , probs = c(0.25, 0.50, 0.75))
+- Deciles.- Dividen al conjunto de observaciones en diez partes iguales
+  - El quinto decil sería igual a la mediana
+  - En R quantile(x , probs = seq(from = 0.1, to = 1, by = 0.1))
+- Centiles.- Dividen a un conjunto de observaciones en cien partes iguales
+  - El quincuagésimo centil es la mediana
+  - En R quantile(x, probs )
+</small>
+
+
+Medias de Posición
+========================================================
+Entendiendo los cuartiles
+
+![Cuartiles](Imagenes/Cuartiles.JPG)
+
+
+
+
+Medias de Posición
+========================================================
+class: small-code
+Calcular las medidas de Tendencia central para la data de Banco 
+
+```{r, fig.align='center'}
+# Minimo y Máximo
+min(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+max(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+# Cuartiles
+quantile(data_banco$Tiempo_Servicio_seg , probs = c(0.25, 0.50, 0.75))
+```
+
+
+Medias de Posición
+========================================================
+class: small-code
+Calcular las medidas de Tendencia central para la data de Banco 
+
+```{r, fig.align='center'}
+# Deciles
+quantile(data_banco$Tiempo_Servicio_seg , probs = seq(from = 0.1, to = 1, by = 0.1))
+# Centil 5% y 95%
+quantile(data_banco$Tiempo_Servicio_seg , probs = c(0.05, 0.95))
+```
+
+
+Medias de Posición - Boxplot
+========================================================
+class: small-code
+Boxplot.- Muestra gráficamente las medidas de posición
+
+
+```{r, fig.align='center'}
+# Un primer Boxplot
+boxplot(data_banco$Tiempo_Servicio_seg)
+```
+
+
+
+Medias de Posición - Boxplot
+========================================================
+class: small-code
+Boxplot.- Muestra gráficamente las medidas de posición
+
+```{r, fig.align='center'}
+boxplot(data_banco$Tiempo_Servicio_seg, main= "Boxplot para Tiempo de Servicio (seg)", ylab= "Tiempo")
+```
+
+
+Medias de Posición - Boxplot
+========================================================
+class: small-code
+Boxplot.- Muestra gráficamente las medidas de posición
+
+```{r, fig.align='center'}
+library("ggplot2")
+ggplot(data = data_banco, aes(x = "", y = Tiempo_Servicio_seg)) + 
+  geom_boxplot() 
+
+```
+
+Medias de Posición - Boxplot
+========================================================
+class: small-code
+Boxplot.- Muestra gráficamente las medidas de posición
+
+```{r, fig.align='center'}
+# Cortar el gráfico (outliers)
+q95 <- quantile(data_banco$Tiempo_Servicio_seg , probs =  0.95)
+ggplot(data = data_banco, aes(x = "", y = Tiempo_Servicio_seg)) + 
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0, q95))
+```
+
+
+
+
+Medias de Posición - Boxplot
+========================================================
+class: small-code
+Boxplot.- Muestra gráficamente las medidas de posición
+
+```{r }
+# Gráfico de forma horizontal y titulo
+q95 <- quantile(data_banco$Tiempo_Servicio_seg , probs =  0.95)
+ggplot(data = data_banco, aes(x = "", y = Tiempo_Servicio_seg)) + 
+  geom_boxplot() +
+  coord_flip(ylim = c(20, q95)) +
+  labs(title= 'Boxplot para Tiempo de Servicio (seg)', y= "Tiempo")
+```
+
+
+
+Medias de Dispersión
+========================================================
+class: small-code
+<small>
+- Varianza.- Media aritmética de las desviaciones de la media elevadas al cuadrado
+  - $s^2 = \frac {\sum (x - \bar{x})^2}{n-1}$
+  - En R: var(x, na.rm = TRUE)
+- Desviación Estándar.- Raíz cuadrada de la varianza.
+  - Esta medida se utiliza frecuentemente para realizar comparaciones entre dos conjuntos de datos
+  - $s =  \sqrt{\frac {\sum (x - \bar{x})^2}{n-1}}$
+  - En R: sd(x, na.rm = TRUE)
+- Rango intercuartil.- Distancia entre el cuartil 1 y 3
+  - En R IQR(x, na.rm = TRUE)
+- Rango.- Diferencia entre maximo y minimo valor de los datos
+  - En R range(x, na.rm = TRUE)
+</small>
+
+
+
+Medias de Dispersión
+========================================================
+class: small-code
+Calcular las medidas de dispersión
+
+```{r, fig.align='center'}
+# Varianza
+var(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+# Desviacion
+sd(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+# Rango intercuartil
+IQR(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+# Rango
+range(data_banco$Tiempo_Servicio_seg, na.rm = TRUE)
+```
+
+
+
+Manipulacion de datos - Intermedio
+========================================================
+type: sub-section
+
+
+
+Crear resúmenes 			summarise()
+========================================================
+class: small-code
+<small>
+summarise() permite aplicar funciones a nuestro data.frame, como se hacía con tapply, ddply aprendido en el curso Básico.
+</small>
+```{r, fig.align='center'}
+# Obtener la media del tiempo de servicio
+data_banco %>% 
+  summarise( 
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, na.rm = TRUE, trim = 0.05),
+		CANTIDAD= n()
+  )
+```
+
+
+
+
+
+
+Crear resúmenes 			summarise()
+========================================================
+class: small-code
+<small>
+summarise() permite aplicar funciones a nuestro data.frame, como se hacía con tapply, ddply aprendido en el curso Básico.
+</small>
+```{r, fig.align='center'}
+# Obtener la media del tiempo de servicio
+data_banco %>% 
+  summarise( 
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, na.rm = TRUE, trim = 0.05),
+		CANTIDAD= n()
+  )
+```
+
+
+Crear resúmenes 			summarise()
+========================================================
+class: small-code
+<small>
+summarise_at() para escoger la variable a utilizar en los cálculos
+</small>
+```{r, fig.align='center'}
+# Obtener la media del tiempo de servicio
+data_banco %>% 
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+
+Crear resúmenes 			summarise()
+========================================================
+class: small-code
+<small>
+summarise_at() permite escoger varias variables
+</small>
+```{r, eval=FALSE}
+# Obtener la media del tiempo de servicio y el Monto
+data_banco %>% 
+  summarise_at( vars(Tiempo_Servicio_seg, Monto), 
+                  funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  ) %>% View
+```
+
+
+
+Crear resúmenes para datos agrupados
+========================================================
+class: small-code
+<small>
+Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion
+</small>
+```{r, eval= FALSE}
+# Obtener medidas de tendencia central para el tiempo de servicio para cada tipo de transaccion
+data_banco %>% 
+  group_by(Transaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+Crear resúmenes para datos agrupados
+========================================================
+class: small-code
+<small>
+Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion
+</small>
+```{r, echo= FALSE}
+# Obtener medidas de tendencia central para el tiempo de servicio para cada tipo de transaccion
+data_banco %>% 
+  group_by(Transaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+Crear resúmenes para datos agrupados
+========================================================
+class: small-code
+<small>
+Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+</small>
+
+```{r , eval=FALSE}
+# Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+data_banco %>% 
+  group_by(Transaccion, Satisfaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+Crear resúmenes para datos agrupados
+========================================================
+class: small-code
+<small>
+Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+</small>
+
+```{r , echo=FALSE}
+# Obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+data_banco %>% 
+  group_by(Transaccion, Satisfaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+
+
+
+
+Crear resúmenes para datos agrupados y filtrados
+========================================================
+class: small-code
+<small>
+Para la Sucursal 62, obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+</small>
+
+```{r , eval=FALSE}
+# Obtener medidas de tendencia central para el tiempo de servicio para cada Sucursal
+data_banco %>% 
+  filter( Sucursal== 62) %>%
+  group_by(Transaccion, Satisfaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+
+
+
+Crear resúmenes para datos agrupados y filtrados
+========================================================
+class: small-code
+<small>
+Para la Sucursal 62, obtener medidas de tendencia central para el tiempo de servicio para cada Transaccion y Nivel de Satisfaccion
+</small>
+
+```{r , echo=FALSE}
+# Obtener medidas de tendencia central
+data_banco %>% 
+  filter( Sucursal== 62) %>%
+  group_by(Transaccion, Satisfaccion) %>%
+  summarise_at( vars(Tiempo_Servicio_seg), 
+                funs (
+                  MEDIA= mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= mean(., na.rm = TRUE, trim = 0.05),
+                  CANTIDAD= n()
+                )
+  )
+```
+
+
+
+Estadística descriptiva - Explorar la forma de nuestros datos
+========================================================
+type: sub-section
+
+
+
+Tablas de Frecuencia
+========================================================
+- Agrupación de datos en clases mutuamente excluyentes, que muestra el número de observaciones que hay en cada clase.
+  - Se agrupa en Intervalos si la variable es cuantitativa.
+  - Se cuenta cada elemento si la variable es cualitativa.
+  - Se lo muestra gráficamente con un histograma o gráfico de barras
+
+
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+- Calcular tabla de frecuencias
+  - library('fdth')
+  - fdt( data , breaks="Sturges" )
+  - fdt( data , start, end, h, right = FALSE) 
+
+
+![Tablas de Frecuencia](Imagenes/TablaFrecuencia.png)
+
+
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+- Calcular tabla de frecuencias
+
+```{r, fig.align='center'}
+library('fdth')
+tabl_frec <- fdt( data_banco$Tiempo_Servicio_seg , breaks="Sturges" )
+tabl_frec
+```
+
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+<small>
+- Histograma
+</small>
+
+```{r, fig.align='center'}
+hist( data_banco$Tiempo_Servicio_seg , breaks="Sturges" , main = "Histograma para la variable Tiempo de respuesta")
+```
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+- Calcular tabla de frecuencias
+
+```{r, fig.align='center'}
+# Definiendo nosotros mismos los rangos
+tabl_frec <- fdt(data_banco$Tiempo_Servicio_seg, start = 0, end = 500, h = 50, right = FALSE) 
+tabl_frec
+```
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+<small>
+- Histograma
+</small>
+
+```{r, fig.align='center'}
+breaks_histog <- c( seq( from = tabl_frec$breaks[1], to= 500,
+	         by= tabl_frec$breaks[3]) , max(data_banco$Tiempo_Servicio_seg) )
+hist( data_banco$Tiempo_Servicio_seg, breaks_histog	)
+```
+
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+<small>
+- Histograma
+</small>
+
+```{r, fig.align='center'}
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Tiempo_Servicio_seg)) + 
+  geom_histogram( aes(y= ..count..)) +
+  labs(title= 'Histograma para Tiempo de Servicio (seg)', y= "Cantidad", x= "Tiempo")
+```
+
+
+
+
+Tablas de Frecuencia - V. Numérica
+========================================================
+class: small-code
+<small>
+- Histograma
+</small>
+
+```{r, fig.align='center'}
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Tiempo_Servicio_seg)) + 
+  geom_histogram( aes(y= ..density..), breaks=breaks_histog) +
+  labs(title= 'Histograma para Tiempo de Servicio (seg)', y= "Cantidad", x= "Tiempo")
+```
+
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+- Calcular tabla de frecuencias
+  - En R, comando table()
+  - Se representa con gráficos de barra
+  - barplot( table( data ))
+  - barplot( table( data), horiz = TRUE)
+
+
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+
+```{r, fig.align='center'}
+# Table
+table(data_banco$Transaccion)
+table(data_banco$Satisfaccion)
+```
+
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+```{r, fig.align='center'}
+# Gráfico Vertical
+barplot( table( data_banco$Transaccion ))
+# Gráfico Horizontal
+barplot( table( data_banco$Transaccion), horiz = TRUE)
+```
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+
+```{r, fig.align='center'}
+par(las=2) # Poner horizontal los labels
+par(mar=c(5,12,4,2)) # Aumentar margen
+barplot( table( data_banco$Transaccion ), horiz = TRUE )
+```
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+
+```{r, fig.align='center'}
+# Gráfico Vertical
+barplot( table( data_banco$Satisfaccion ))
+# Gráfico Horizontal
+barplot( table( data_banco$Satisfaccion), horiz = TRUE)
+```
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+
+```{r, fig.align='center'}
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Satisfaccion)) + 
+  geom_bar( ) +
+  labs(title= 'Grafico de barra para Nivel de Satisfaccion', y= "Cantidad", x= "Nivel de Satisfaccion")
+```
+
+
+
+Tablas de Frecuencia - V. Cualitativa
+========================================================
+class: small-code
+<small>
+- Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+</small>
+
+```{r, fig.align='center'}
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Satisfaccion)) + 
+  geom_bar( ) +
+  coord_flip() +
+  labs(title= 'Grafico de barra para Nivel de Satisfaccion', y= "Cantidad", x= "Nivel de Satisfaccion")
+```
+
+
+
+Descriptivas - Summary
+========================================================
+class: small-code
+<small>
+Obtiene las siguientes estadísticas descriptivas:
+- Variables Numéricas: Min, Max, Cuartiles y Media 
+- Variables carácter: El total de datos
+- Variables factor: frecuencias
+- summary()
+</small>
+```{r, fig.align='center'}
+summary( data_banco$Tiempo_Servicio_seg)
+```
+
+
+
+Descriptivas - Summary
+========================================================
+class: small-code
+<small>
+```{r, fig.align='center'}
+summary( data_banco)
+```
+</small>
+
+
+Descriptivas - PrettyR
+========================================================
+class: small-code
+<small>
+describe() Puede ser más completo que summmary
+</small>
+```{r, fig.align='center'}
+library(prettyR)
+describe( data_banco, num.desc = c("mean", "sd", "median", "min",
+"max", "valid.n"))
+
+```
+
+
+Descriptivas - PrettyR
+========================================================
+class: small-code
+<small>
+describe() Puede ser más completo que summmary
+</small>
+
+```{r, fig.align='center'}
+Q25 <- function(x, na.rm=TRUE){quantile(as.numeric(x), 0.25, na.rm = na.rm, 
+names = FALSE)} 
+Q75 <- function(x, na.rm=TRUE){quantile(as.numeric(x), 0.75, na.rm = na.rm, 
+names = FALSE)} 
+describe(data_banco, num.desc=c("mean", "median", "sd", "min", "max",
+"Q25", "Q75","valid.n")) 
+```
+
+
+
+
+ Descriptivas - PrettyR
+========================================================
+class: small-code
+
+
+```{r, fig.align='center'}
+# Sólo columnas numéricas
+describe( data_banco[, sapply(data_banco, is.numeric)], num.desc = c("mean", "sd", "median", "min",
+"max", "valid.n"))
+```
+
+
+
+
+Descriptivas - Datos agrupados
+========================================================
+class: small-code
+
+- Media wt.mean(x, wt)
+- Varianza  wt.var(x, wt)
+- Desviación estándar wt.sd(x, wt)
+
+
+
+
+
+
+
+FIN 
+========================================================
+type: sub-section
+
