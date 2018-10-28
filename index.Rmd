@@ -1,26 +1,11 @@
 ---
+title: NÉSTOR MONTAÑO
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Ingeniero en estadística informática, maestrante en estadística con mención en gestión de la calidad productividad (ambos programas desarrollados en ESPOL) y miembro del directorio de la Sociedad ecuatoriana de estadística SEE
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Cuenta con experiencia profesional de más de 10 años en el sector privado, se desempeñó como ingeniero de procesos especialista en el área matemático-estadística del grupo Crecos (actualmente Crecoscorp S.A.), realizó análisis de mercado en la empresa Productos Metalúrgicos S.A. a más de coordinar consultorías (área estadística y gis) para instituciones del sector privado y público como Syngenta, Muy Ilustre municipalidad de Guayaquil, Ministerio de agricultura, mientras laboraba para una reconocida consultora ambiental. En el presente, trabaja como jefe de planificación de demanda e inteligencia de negocios en una importante y reconocida empresa comercial del sector ferretero, como consultor privado a través de la empresa MASSAP S.A. además es capacitador de la SEE e instituciones privadas en el lenguaje de programación R y estadística en general.
 
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Colabora constantemente con la academia a través de participaciones en eventos o dictado de diversos cursos y conferencias para estudiantes de pregrado o profesionales, sus áreas de interés son: muestreo, estadística multivariante, forecasting, algoritmos de clasificación, optimización, inteligencia de negocios y desarrollo de aplicaciones estadísticas.

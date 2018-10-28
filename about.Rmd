@@ -1,4 +1,5 @@
 ---
+title: NÉSTOR MONTAÑO github.io
 ---
 
 ```{r setup, include=FALSE}
@@ -8,5 +9,4 @@ knitr::opts_chunk$set(echo = TRUE)
 ## About
 
 
-Sitio personal
-
+Sitio personal construido con r, rstudio, rmarkdown y knitr.
