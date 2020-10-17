@@ -777,7 +777,7 @@ Grafico usando ggplot2 (en otro curso se enseñará todo lo que está detrás de
 
 ```r
 # Con ggplot2
-ggplot(data = data_banco, aes(x= Satisfaccion), fig.height= 3.5) + 
+ggplot(data = data_banco, aes(x= Satisfaccion)) + 
   geom_bar( ) +
   coord_flip() +
   labs(title= 'Grafico de barra para Nivel de Satisfaccion', y= "Cantidad", x= "Nivel de Satisfaccion")
