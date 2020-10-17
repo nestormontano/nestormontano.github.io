@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Resumir y Unir informacion</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Zulemma Bazurto / Néstor Montaño" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra_fit-screen/fit-screen.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Resumir y Unir informacion
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+### Sociedad Ecuatoriana de Estadística
+### Octubre-2020
+
+---
+
+class: hide_logo 
+background-image: url("Imagenes/Logo-BanderaCorregida_con_curva_peque.png")
+
+
+&lt;style type="text/css"&gt;
+.huge .remark-code { /*Change made here*/
+  font-size: 150% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 75% !important;
+}
+
+&lt;/style&gt;
+
+<div>
+<style type="text/css">.xaringan-extra-logo {
+width: 800px;
+height: 50px;
+z-index: 0;
+background-image: url(Imagenes/Top_Logo.png);
+background-size: contain;
+background-repeat: no-repeat;
+position: absolute;
+top:0;right:0.4em;
+}
+</style>
+<script>(function () {
+  let tries = 0
+  function addLogo () {
+    if (typeof slideshow === 'undefined') {
+      tries += 1
+      if (tries < 10) {
+        setTimeout(addLogo, 100)
+      }
+    } else {
+      document.querySelectorAll('.remark-slide-content:not(.title-slide):not(.inverse):not(.hide_logo)')
+        .forEach(function (slide) {
+          const logo = document.createElement('div')
+          logo.classList = 'xaringan-extra-logo'
+          logo.href = null
+          slide.appendChild(logo)
+        })
+    }
+  }
+  document.addEventListener('DOMContentLoaded', addLogo)
+})()</script>
+</div>
+
+
+---
+
+.footnote[
+**Nota:**  
+Con *Alt + F* o  *Option + F* puede hacer que estas dapositivas ocupen todo el navegador (es decir que se ignore el aspecto de diapositiva que tiene por default la presentación)
+]
+
+
+
+
+
+---
+# R - cargar librerías
+
+
+
+```r
+#### LIBRERIAS ------
+library(openxlsx) # para importar desde excel
+library(tidyverse) # manipulacion de datos
+library(ggplot2) # graficos
+library(magrittr) # %&gt;% 
+library(lubridate) # Manipulacion de fechas
+library(stringr) # Manipulacion de texto
+```
+
+
+
+---
+# Ejemplo: Transacciones bancarias
+
+
+El Banco del Pacífico requiere mejorar los tiempos de atención al cliente en ventanilla, para ello ha recolectado esta información anónimamente para cada cajero y transacción realizada.   
+
+Le suministran un excel con dos hojas:   
+
+1. Tiene los datos de las transacciones, columnas: Sucursal, Cajero, ID_Transaccion, Transaccion, Tiempo_Servicio_seg, Nivel de satisfacción, Monto de la transaccion. 
+2. Otra hoja que indica si en la sucursal se ha puesto o no el nuevo sistema.
+
+
+
+
+---
+# Ejemplo - Importar
+
+
+
+```r
+# Leer el archivo de excel y asignarlo al objeto data_banco
+data_banco &lt;- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data")
+data_sucursal &lt;- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data_Sucursal")
+```
+
+
+
+
+---
+# Ejemplo - Convertir a tibbles (un dataframe mejorado): 			
+
+
+
+
+
+```r
+# Convertir el data_banco a un tibble
+data_banco &lt;- tbl_df( data_banco) 
+```
+
+```
+## Warning: `tbl_df()` is deprecated as of dplyr 1.0.0.
+## Please use `tibble::as_tibble()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.
+```
+
+```r
+# Convertir el data_sucursal a un tibble
+data_sucursal &lt;- tbl_df(data_sucursal) 
+```
+
+
+
+
+---
+# Ejemplo - Manipulacion de datos
+
+
+
+Lo primero que necesitamos es corregir los tipos de datos, nótese que *Monto* tiene una mezcla de "," y ".".
+
+
+
+```r
+data_banco &lt;- data_banco %&gt;%
+  mutate( Monto= str_replace(Monto, pattern = ",", replacement = ".") ) %&gt;%
+  mutate(Sucursal= as.character(Sucursal),
+         Cajero = as.character(Cajero),
+         Satisfaccion = parse_factor(Satisfaccion, 
+                                     levels= c('Muy Malo', 'Malo', 'Regular', 
+                                               'Bueno', 'Muy Bueno')),
+         Monto= parse_number(Monto, locale = locale(decimal_mark = "."))) 
+```
+
+
+
+
+---
+class: center, middle, hide_logo
+
+# Resumir/Agregar los Datos
+
+## Introducción a R
+
+
+---
+# Crear resúmenes: summarise()
+
+
+
+`summarise()` permite aplicar funciones a las columnas de nuestro data.frame. En R-base se usaría `tapply()` y otra opcion muy conocida es `ddply()` del paquete plyr.
+
+
+```r
+# Obtener la medidas descriptivas del tiempo de servicio
+data_banco %&gt;% 
+* summarise(
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, na.rm = TRUE, trim = 0.05),
+    DESV= sd(Tiempo_Servicio_seg, na.rm=TRUE), 
+    RANGO= diff(range(Tiempo_Servicio_seg)),
+		CANTIDAD= n() # n() permite contar el número de filas
+  )
+```
+
+```
+## # A tibble: 1 x 5
+##   MEDIA MEDIA_ACOT  DESV RANGO CANTIDAD
+##   &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+## 1  156.       142.  120. 1585.    24299
+```
+
+
+
+
+---
+# Crear resúmenes: summarise()
+
+
+
+`summarise_at()` para escoger la(s) variable(s) a utilizar en los cálculos, la diferencia con lo anterior es que no se repite el nombre de la variable en cada línea.
+
+
+```r
+# Obtener la media del tiempo de servicio
+data_banco %&gt;% 
+* summarise_at( vars(Tiempo_Servicio_seg),
+                list(
+                  MEDIA= ~mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= ~mean(., na.rm = TRUE, trim = 0.05),
+                  DESV= ~sd(., na.rm=TRUE), 
+                  RANGO= ~diff(range(.)),
+                  CANTIDAD= ~n()
+                )
+  )
+```
+
+```
+## # A tibble: 1 x 5
+##   MEDIA MEDIA_ACOT  DESV RANGO CANTIDAD
+##   &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+## 1  156.       142.  120. 1585.    24299
+```
+
+
+
+---
+# Crear resúmenes: summarise()
+
+
+
+`summarise_at()` escogiendo varias variables, nótese el nombre de las columnas resultantes
+
+
+```r
+# Obtener la media del tiempo de servicio y el Monto
+data_banco %&gt;% 
+* summarise_at( vars(Tiempo_Servicio_seg, Monto),
+                  list(
+                  MEDIA= ~mean(., na.rm=TRUE), 
+                  DESV= ~sd(., na.rm = TRUE),
+                  CANTIDAD= ~n()
+                )
+  ) 
+```
+
+```
+## # A tibble: 1 x 6
+##   Tiempo_Servicio~ Monto_MEDIA Tiempo_Servicio~ Monto_DESV Tiempo_Servicio~
+##              &lt;dbl&gt;       &lt;dbl&gt;            &lt;dbl&gt;      &lt;dbl&gt;            &lt;int&gt;
+## 1             156.       1996.             120.       816.            24299
+## # ... with 1 more variable: Monto_CANTIDAD &lt;int&gt;
+```
+
+
+
+---
+# Crear resúmenes: summarise()
+
+
+
+`summarise_if()` permite escoger varias variables que cumplan una condición
+
+
+```r
+# Obtener la media del tiempo de servicio y el Monto
+data_banco %&gt;% 
+* summarise_if( is.numeric,
+                  list(
+                  MEDIA= ~mean(., na.rm=TRUE), 
+                  MEDIA_ACOT= ~mean(., na.rm = TRUE, trim = 0.05)
+                )
+  ) 
+```
+
+```
+## # A tibble: 1 x 4
+##   Tiempo_Servicio_seg_ME~ Monto_MEDIA Tiempo_Servicio_seg_MEDI~ Monto_MEDIA_ACOT
+##                     &lt;dbl&gt;       &lt;dbl&gt;                     &lt;dbl&gt;            &lt;dbl&gt;
+## 1                    156.       1996.                      142.            1983.
+```
+
+---
+# Crear resúmenes para datos agrupados
+
+`group_by()` permite aplicar funciones a nuestro data.frame separado por una o más variables, por ejemplo para obtener medidas de tendencia central para el tiempo de servicio según cada Transacción se haría:
+
+
+```r
+# Obtener medidas de tendencia central para el tiempo de servicio para cada tipo de transaccion
+data_banco %&gt;% 
+* group_by(Transaccion) %&gt;%
+  summarise( 
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, na.rm = TRUE, trim = 0.05),
+    DESV= sd(Tiempo_Servicio_seg, na.rm=TRUE), 
+   	CANTIDAD= n() 
+  )
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```
+## # A tibble: 3 x 5
+##   Transaccion                 MEDIA MEDIA_ACOT  DESV CANTIDAD
+##   &lt;chr&gt;                       &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+## 1 Cobrar cheque (Cta del Bco)  186.       175. 115.      5407
+## 2 Cobro/Pago (Cta externa)     301.       285. 185.      3005
+## 3 Deposito                     118.       112.  72.4    15887
+```
+
+
+---
+class: tiny
+# Crear resúmenes para datos agrupados
+
+Obtener medidas de tendencia central del tiempo de servicio para cada combinación de Transaccion y Nivel de Satisfaccion. 
+
+.pull-left[
+
+```r
+# Obtener medidas de tendencia central del 
+# tiempo de servicio para cada combinación de 
+# Transaccion y Nivel de Satisfaccion.
+data_banco %&gt;% 
+* group_by(Transaccion, Satisfaccion) %&gt;%
+  summarise( 
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, 
+                     na.rm = TRUE, trim = 0.05),
+    DESV= sd(Tiempo_Servicio_seg, na.rm=TRUE), 
+   	CANTIDAD= n() 
+  )
+```
+]
+
+.pull-right[
+
+```
+## `summarise()` regrouping output by 'Transaccion' (override with `.groups` argument)
+```
+
+```
+## # A tibble: 15 x 6
+## # Groups:   Transaccion [3]
+##    Transaccion                 Satisfaccion MEDIA MEDIA_ACOT  DESV CANTIDAD
+##    &lt;chr&gt;                       &lt;fct&gt;        &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+##  1 Cobrar cheque (Cta del Bco) Muy Malo      186.       175. 117.       505
+##  2 Cobrar cheque (Cta del Bco) Malo          183.       174. 107.       840
+##  3 Cobrar cheque (Cta del Bco) Regular       188.       177. 117.      1046
+##  4 Cobrar cheque (Cta del Bco) Bueno         185.       174. 114.      1423
+##  5 Cobrar cheque (Cta del Bco) Muy Bueno     187.       176. 119.      1593
+##  6 Cobro/Pago (Cta externa)    Muy Malo      272.       260. 168.       238
+##  7 Cobro/Pago (Cta externa)    Malo          290.       271. 193.       403
+##  8 Cobro/Pago (Cta externa)    Regular       307.       293. 180.       556
+##  9 Cobro/Pago (Cta externa)    Bueno         309.       292. 188.       851
+## 10 Cobro/Pago (Cta externa)    Muy Bueno     304.       287. 186.       957
+## 11 Deposito                    Muy Malo      113.       108.  69.7     2266
+## 12 Deposito                    Malo          116.       110.  72.1     3231
+## 13 Deposito                    Regular       120.       113.  76.0     3037
+## 14 Deposito                    Bueno         118.       112.  72.9     3641
+## 15 Deposito                    Muy Bueno     119.       114.  70.7     3712
+```
+]
+
+
+
+
+
+
+---
+class: tiny
+# Crear resúmenes para datos agrupados y filtrados
+
+Para la Sucursal 62, obtener medidas de tendencia central del tiempo de servicio para cada combinación de Transaccion y Nivel de Satisfaccion. 
+
+.pull-left[
+
+```r
+# Para la Sucursal 62
+# Obtener medidas de tendencia central del 
+# tiempo de servicio para cada combinación de 
+# Transaccion y Nivel de Satisfaccion.
+data_banco %&gt;%   
+* filter( Sucursal== 62) %&gt;%
+  group_by(Transaccion, Satisfaccion) %&gt;% 
+  summarise( 
+    MEDIA= mean(Tiempo_Servicio_seg, na.rm=TRUE), 
+    MEDIA_ACOT= mean(Tiempo_Servicio_seg, 
+                     na.rm = TRUE, trim = 0.05),
+    DESV= sd(Tiempo_Servicio_seg, na.rm=TRUE), 
+   	CANTIDAD= n() 
+  )
+```
+]
+
+.pull-right[
+
+```
+## `summarise()` regrouping output by 'Transaccion' (override with `.groups` argument)
+```
+
+```
+## # A tibble: 15 x 6
+## # Groups:   Transaccion [3]
+##    Transaccion                 Satisfaccion MEDIA MEDIA_ACOT  DESV CANTIDAD
+##    &lt;chr&gt;                       &lt;fct&gt;        &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+##  1 Cobrar cheque (Cta del Bco) Muy Malo     102.        99.0  50.0       85
+##  2 Cobrar cheque (Cta del Bco) Malo         117.       114.   53.6      122
+##  3 Cobrar cheque (Cta del Bco) Regular      104.       101.   53.3      119
+##  4 Cobrar cheque (Cta del Bco) Bueno        108.       105.   46.9      191
+##  5 Cobrar cheque (Cta del Bco) Muy Bueno    102.        98.4  48.5      171
+##  6 Cobro/Pago (Cta externa)    Muy Malo     161.       158.   78.9       54
+##  7 Cobro/Pago (Cta externa)    Malo         152.       146.   75.6       80
+##  8 Cobro/Pago (Cta externa)    Regular      171.       165.   84.6       74
+##  9 Cobro/Pago (Cta externa)    Bueno        165.       159.   85.9      103
+## 10 Cobro/Pago (Cta externa)    Muy Bueno    167.       163.   78.4       93
+## 11 Deposito                    Muy Malo      67.2       65.4  33.0      292
+## 12 Deposito                    Malo          64.1       62.2  31.2      402
+## 13 Deposito                    Regular       63.7       62.3  31.4      327
+## 14 Deposito                    Bueno         65.8       64.3  30.5      390
+## 15 Deposito                    Muy Bueno     67.1       65.4  32.1      335
+```
+]
+
+
+
+
+---
+class: tiny
+# Crear resúmenes con funciones de más de una salida
+
+Suponga que desea obtener medidas de posición para el tiempo de servicio según el Nivel de Satisfaccion, ya vimos que la función quantile genera un vector y no sólo un número, ¿Cómo podríamos usar esta salida dentro de summarise? 
+
+.pull-left[
+
+```r
+# Obtener medidas de tendencia central
+data_banco %&gt;% 
+  group_by(Satisfaccion) %&gt;% 
+  summarise(
+*   tibble(
+      Quartil = c("Min", "Q1", "Mediana", "Q3", "Max"), 
+      Valor= quantile(Tiempo_Servicio_seg, 
+                      c(0, 0.25, 0.5, 0.75, 1))
+      )
+    )
+```
+]
+
+.pull-right[
+
+```
+## `summarise()` regrouping output by 'Satisfaccion' (override with `.groups` argument)
+```
+
+```
+## # A tibble: 25 x 3
+## # Groups:   Satisfaccion [5]
+##    Satisfaccion Quartil  Valor
+##    &lt;fct&gt;        &lt;chr&gt;    &lt;dbl&gt;
+##  1 Muy Malo     Min       18.1
+##  2 Muy Malo     Q1        69.5
+##  3 Muy Malo     Mediana  111  
+##  4 Muy Malo     Q3       176. 
+##  5 Muy Malo     Max      823. 
+##  6 Malo         Min       20  
+##  7 Malo         Q1        71.7
+##  8 Malo         Mediana  115. 
+##  9 Malo         Q3       184. 
+## 10 Malo         Max     1337. 
+## # ... with 15 more rows
+```
+]
+
+
+---
+class: center, middle, hide_logo
+
+# Estadística descriptiva - Explorar la forma de nuestros datos
+
+## Introducción al análisis de datos
+
+
+
+
+
+
+---
+# Tablas de Frecuencia
+
+- Agrupación de datos en clases mutuamente excluyentes, que muestra el número de observaciones que hay en cada clase.
+  - Se agrupa en Intervalos si la variable es cuantitativa.
+  - Se cuenta cada elemento si la variable es cualitativa.
+  - Se lo muestra gráficamente con un histograma o gráfico de barras
+
+
+
+
+---
+# Tablas de Frecuencia - V. Numérica
+
+
+Calcular tabla de frecuencias
+  - library('fdth')
+  - fdt( data , breaks="Sturges" )
+  - fdt( data , start, end, h, right = FALSE) 
+
+&lt;img src="Imagenes/TablaFrecuencia.png" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+class: tiny
+# Tablas de Frecuencia - V. Numerica
+
+
+```r
+library('fdth')
+```
+
+```
+## Warning: package 'fdth' was built under R version 3.6.3
+```
+
+```r
+## tabl_frec &lt;- fdt( data_banco$Tiempo_Servicio_seg , 
+##                        breaks="Sturges" ) ## Base R
+tabl_frec &lt;- data_banco %$% 
+  fdt(Tiempo_Servicio_seg, breaks="Sturges" ) 
+tabl_frec
+```
+
+```
+##         Class limits     f   rf rf(%)    cf  cf(%)
+##  [17.95045,117.9989) 11642 0.48 47.91 11642  47.91
+##  [117.9989,218.0473)  7697 0.32 31.68 19339  79.59
+##  [218.0473,318.0957)  2910 0.12 11.98 22249  91.56
+##  [318.0957,418.1442)  1119 0.05  4.61 23368  96.17
+##  [418.1442,518.1926)   454 0.02  1.87 23822  98.04
+##   [518.1926,618.241)   241 0.01  0.99 24063  99.03
+##   [618.241,718.2894)   114 0.00  0.47 24177  99.50
+##  [718.2894,818.3379)    63 0.00  0.26 24240  99.76
+##  [818.3379,918.3863)    34 0.00  0.14 24274  99.90
+##  [918.3863,1018.435)    10 0.00  0.04 24284  99.94
+##  [1018.435,1118.483)     7 0.00  0.03 24291  99.97
+##  [1118.483,1218.532)     4 0.00  0.02 24295  99.98
+##   [1218.532,1318.58)     2 0.00  0.01 24297  99.99
+##   [1318.58,1418.628)     1 0.00  0.00 24298 100.00
+##  [1418.628,1518.677)     0 0.00  0.00 24298 100.00
+##  [1518.677,1618.725)     1 0.00  0.00 24299 100.00
+```
+
+
+
+
+
+---
+class: tiny
+# Tablas de Frecuencia - V. Numérica
+
+
+tabl_frec es una lista, veamos sus componentes (esto es útil para cuando quieran exportar a excel por ejemplo)
+
+
+```r
+# Limites de los intervalos
+tabl_frec$breaks
+```
+
+```
+##      start        end          h      right 
+##   17.95045 1618.72530  100.04843    0.00000
+```
+
+```r
+# Tabla de frecuencias
+tabl_frec$table
+```
+
+```
+##           Class limits     f           rf        rf(%)    cf     cf(%)
+## 1  [17.95045,117.9989) 11642 4.791144e-01 47.911436685 11642  47.91144
+## 2  [117.9989,218.0473)  7697 3.167620e-01 31.676200667 19339  79.58764
+## 3  [218.0473,318.0957)  2910 1.197580e-01 11.975801473 22249  91.56344
+## 4  [318.0957,418.1442)  1119 4.605128e-02  4.605127783 23368  96.16857
+## 5  [418.1442,518.1926)   454 1.868390e-02  1.868389646 23822  98.03696
+## 6   [518.1926,618.241)   241 9.918104e-03  0.991810363 24063  99.02877
+## 7   [618.241,718.2894)   114 4.691551e-03  0.469155109 24177  99.49792
+## 8  [718.2894,818.3379)    63 2.592699e-03  0.259269929 24240  99.75719
+## 9  [818.3379,918.3863)    34 1.399235e-03  0.139923454 24274  99.89712
+## 10 [918.3863,1018.435)    10 4.115396e-04  0.041153957 24284  99.93827
+## 11 [1018.435,1118.483)     7 2.880777e-04  0.028807770 24291  99.96708
+## 12 [1118.483,1218.532)     4 1.646158e-04  0.016461583 24295  99.98354
+## 13  [1218.532,1318.58)     2 8.230791e-05  0.008230791 24297  99.99177
+## 14  [1318.58,1418.628)     1 4.115396e-05  0.004115396 24298  99.99588
+## 15 [1418.628,1518.677)     0 0.000000e+00  0.000000000 24298  99.99588
+## 16 [1518.677,1618.725)     1 4.115396e-05  0.004115396 24299 100.00000
+```
+
+
+
+
+---
+# Tablas de Frecuencia - V. Numérica
+
+Histograma
+
+
+```r
+hist( data_banco$Tiempo_Servicio_seg , breaks="Sturges" , 
+      main = "Histograma para la variable Tiempo de respuesta")
+```
+
+&lt;img src="02_Summarise_Unir_informacion_files/figure-html/unnamed-chunk-13-1.png" style="display: block; margin: auto;" /&gt;
+
+
+---
+# Tablas de Frecuencia - V. Numérica
+
+
+
+Histograma
+
+
+
+```r
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Tiempo_Servicio_seg)) + 
+  geom_histogram( aes(y= ..count..)) +
+  labs(title= 'Histograma para Tiempo de Servicio (seg)', y= "Cantidad", x= "Tiempo")
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+&lt;img src="02_Summarise_Unir_informacion_files/figure-html/unnamed-chunk-14-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+# Tablas de Frecuencia - V. Numérica
+
+
+Calcular tabla de frecuencias
+
+
+```r
+# Definiendo nosotros mismos los rangos
+## tabl_frec &lt;- fdt(data_banco$Tiempo_Servicio_seg, start = 0, end = 500, h = 50, right = FALSE) ## BaseR
+tabl_frec &lt;- data_banco %$% fdt(Tiempo_Servicio_seg, start = 0, end = 500, h = 50, right = FALSE) 
+tabl_frec
+```
+
+```
+##  Class limits    f   rf rf(%)    cf cf(%)
+##        [0,50) 2464 0.10 10.14  2464 10.14
+##      [50,100) 6990 0.29 28.77  9454 38.91
+##     [100,150) 5378 0.22 22.13 14832 61.04
+##     [150,200) 3507 0.14 14.43 18339 75.47
+##     [200,250) 2281 0.09  9.39 20620 84.86
+##     [250,300) 1280 0.05  5.27 21900 90.13
+##     [300,350)  816 0.03  3.36 22716 93.49
+##     [350,400)  515 0.02  2.12 23231 95.60
+##     [400,450)  311 0.01  1.28 23542 96.88
+##     [450,500)  213 0.01  0.88 23755 97.76
+```
+
+
+
+
+
+
+
+---
+# Tablas de Frecuencia - V. Cualitativa
+
+- Calcular tabla de frecuencias
+  - En R, comando table()
+  - Se representa con gráficos de barra
+  - barplot( table( data ))
+  - barplot( table( data), horiz = TRUE)
+
+
+
+
+
+---
+# Tablas de Frecuencia - V. Cualitativa
+
+
+
+Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+
+
+
+```r
+# Table
+table(data_banco$Transaccion)
+```
+
+```
+## 
+## Cobrar cheque (Cta del Bco)    Cobro/Pago (Cta externa) 
+##                        5407                        3005 
+##                    Deposito 
+##                       15887
+```
+
+```r
+table(data_banco$Satisfaccion)
+```
+
+```
+## 
+##  Muy Malo      Malo   Regular     Bueno Muy Bueno 
+##      3009      4474      4639      5915      6262
+```
+
+
+
+
+---
+# Tablas de Frecuencia - V. Cualitativa
+
+
+
+Frecuencia para la transacción que se está realizando y para nivel de satisfacción
+
+
+```r
+# Gráfico Vertical
+barplot( table( data_banco$Transaccion ))
+```
+
+&lt;img src="02_Summarise_Unir_informacion_files/figure-html/unnamed-chunk-17-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Tablas de Frecuencia - V. Cualitativa
+
+
+
+Grafico usando ggplot2 (en otro curso se enseñará todo lo que está detrás de ggplot2)
+
+
+
+```r
+# Con ggplot2
+ggplot(data = data_banco, aes(x= Satisfaccion), fig.height= 3.5) + 
+  geom_bar( ) +
+  coord_flip() +
+  labs(title= 'Grafico de barra para Nivel de Satisfaccion', y= "Cantidad", x= "Nivel de Satisfaccion")
+```
+
+&lt;img src="02_Summarise_Unir_informacion_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+# Descriptivas - Summary
+
+
+
+Obtiene las siguientes estadísticas descriptivas:
+- Variables Numéricas: Min, Max, Cuartiles y Media 
+- Variables carácter: El total de datos
+- Variables factor: frecuencias
+- summary()
+
+
+```r
+summary( data_banco$Tiempo_Servicio_seg)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##   18.13   75.69  122.45  155.58  197.73 1602.70
+```
+
+
+
+---
+# Descriptivas - Summary
+
+
+
+
+```r
+summary( data_banco)
+```
+
+```
+##    Sucursal            Cajero          ID_Transaccion     Transaccion       
+##  Length:24299       Length:24299       Length:24299       Length:24299      
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##                                                                             
+##                                                                             
+##                                                                             
+##  Tiempo_Servicio_seg    Satisfaccion      Monto        
+##  Min.   :  18.13     Muy Malo :3009   Min.   :  53.82  
+##  1st Qu.:  75.69     Malo     :4474   1st Qu.:1417.73  
+##  Median : 122.45     Regular  :4639   Median :2087.43  
+##  Mean   : 155.58     Bueno    :5915   Mean   :1996.16  
+##  3rd Qu.: 197.73     Muy Bueno:6262   3rd Qu.:2482.09  
+##  Max.   :1602.70                      Max.   :6278.02
+```
+
+
+
+---
+# Descriptivas - PrettyR
+
+
+
+Otra opción es usar paquetes especiales como `PrettyR` que tiene el comando `describe()` que es más completo que `summary()`, les dejo un ejemplo:
+
+
+```r
+library(prettyR)
+describe( data_banco, 
+          num.desc = c("mean", "sd", "median", 
+                       "min", "max", "valid.n"))
+```
+
+```
+## Description of data_banco
+```
+
+```
+## 
+##  Numeric 
+##                        mean     sd  median   min     max valid.n
+## Tiempo_Servicio_seg  155.58 120.01  122.45 18.13 1602.70   24299
+## Monto               1996.16 816.15 2087.43 53.82 6278.02   24299
+## 
+##  Factor 
+##             
+## Satisfaccion Muy Bueno   Bueno Regular    Malo Muy Malo
+##      Count     6262.00 5915.00 4639.00 4474.00  3009.00
+##      Percent     25.77   24.34   19.09   18.41    12.38
+## Mode Muy Bueno 
+##          
+## Sucursal        85     443    267      62     586
+##   Count   12044.00 4190.00 3329.0 2838.00 1898.00
+##   Percent    49.57   17.24   13.7   11.68    7.81
+## Mode 85 
+##          
+## Cajero       3983     472    3678     357    2503    4208    3732    2958
+##   Count   4280.00 2764.00 1962.00 1832.00 1578.00 1471.00 1339.00 1327.00
+##   Percent   17.61   11.37    8.07    7.54    6.49    6.05    5.51    5.46
+##          
+## Cajero       4796    4820    5286     56   5211   2556    70    299   4837
+##   Count   1084.00 1067.00 1049.00 832.00 675.00 667.00 656.0 597.00 550.00
+##   Percent    4.46    4.39    4.32   3.42   2.78   2.74   2.7   2.46   2.26
+##          
+## Cajero      2623  4424    63  2230  3023  5174  3327  4353   87  321
+##   Count   182.00 94.00 81.00 53.00 51.00 47.00 37.00 14.00 7.00 3.00
+##   Percent   0.75  0.39  0.33  0.22  0.21  0.19  0.15  0.06 0.03 0.01
+## Mode 3983 
+##               
+## ID_Transaccion        3      10       2
+##        Count   15887.00 5407.00 3005.00
+##        Percent    65.38   22.25   12.37
+## Mode 3 
+##            
+## Transaccion Deposito Cobrar cheque (Cta del Bco) Cobro/Pago (Cta externa)
+##     Count   15887.00                     5407.00                  3005.00
+##     Percent    65.38                       22.25                    12.37
+## Mode Deposito
+```
+
+
+
+
+
+---
+class: center, middle, hide_logo
+
+# Manipulación de datos - Unir Datos
+## Introducción a R 
+
+
+
+
+---
+# Unir Datos
+
+Se va a crear unos data.frame simples para entender la idea detrás de los comandos a usar
+
+
+
+```r
+# Crear un Data frame
+df_1  &lt;- data.frame( 
+  Nombre= c('Ana', 'Berni', 'Carlos', 'Daniel', 'Ericka'), 
+  Edad = c(20,19,20,19,18), 
+  Ciudad= factor(c('Gye', 'Uio', 'Cue', 'Gye', 'Cue')) )
+df_1
+```
+
+```
+##   Nombre Edad Ciudad
+## 1    Ana   20    Gye
+## 2  Berni   19    Uio
+## 3 Carlos   20    Cue
+## 4 Daniel   19    Gye
+## 5 Ericka   18    Cue
+```
+
+
+
+
+---
+# Unir Datos
+
+
+
+
+```r
+# Crear  un Data frame
+df_2  &lt;- data.frame( 
+  Nombre= c('Fulton', 'Gilda'), 
+  Ciudad= factor(c('Mach', 'Gye')) ,
+  Edad = c(21,18) 
+  )
+df_2
+```
+
+```
+##   Nombre Ciudad Edad
+## 1 Fulton   Mach   21
+## 2  Gilda    Gye   18
+```
+
+
+
+
+
+---
+# Unir Datos
+
+
+
+
+```r
+# Crear  un Data frame
+df_3  &lt;- data.frame( 
+  Estado_Civil= c('S', 'D', "S", "C", "D")
+  )
+df_3
+```
+
+```
+##   Estado_Civil
+## 1            S
+## 2            D
+## 3            S
+## 4            C
+## 5            D
+```
+
+
+
+
+
+---
+# Unir filas
+
+
+Para unir filas se usa bind_rows
+
+```r
+# Aumentar filas
+bind_rows(df_1, df_2)
+```
+
+```
+##   Nombre Edad Ciudad
+## 1    Ana   20    Gye
+## 2  Berni   19    Uio
+## 3 Carlos   20    Cue
+## 4 Daniel   19    Gye
+## 5 Ericka   18    Cue
+## 6 Fulton   21   Mach
+## 7  Gilda   18    Gye
+```
+
+
+
+
+---
+# Unir filas
+
+
+
+Para unir filas se usa bind_rows
+
+
+```r
+# Aumentar filas
+bind_rows(df_1, df_3)
+```
+
+```
+##    Nombre Edad Ciudad Estado_Civil
+## 1     Ana   20    Gye         &lt;NA&gt;
+## 2   Berni   19    Uio         &lt;NA&gt;
+## 3  Carlos   20    Cue         &lt;NA&gt;
+## 4  Daniel   19    Gye         &lt;NA&gt;
+## 5  Ericka   18    Cue         &lt;NA&gt;
+## 6    &lt;NA&gt;   NA   &lt;NA&gt;            S
+## 7    &lt;NA&gt;   NA   &lt;NA&gt;            D
+## 8    &lt;NA&gt;   NA   &lt;NA&gt;            S
+## 9    &lt;NA&gt;   NA   &lt;NA&gt;            C
+## 10   &lt;NA&gt;   NA   &lt;NA&gt;            D
+```
+
+```r
+# rbind(df_1, df_3) #ERROR
+```
+
+
+
+
+---
+# Unir filas
+
+
+
+Aumentar columna que indica origen de la fila
+
+```r
+# Aumentar columna que indica origen de la fila
+bind_rows(list(df_1, df_2), .id = "id")
+```
+
+```
+##   id Nombre Edad Ciudad
+## 1  1    Ana   20    Gye
+## 2  1  Berni   19    Uio
+## 3  1 Carlos   20    Cue
+## 4  1 Daniel   19    Gye
+## 5  1 Ericka   18    Cue
+## 6  2 Fulton   21   Mach
+## 7  2  Gilda   18    Gye
+```
+
+
+
+---
+# Unir filas
+
+
+
+Aumentar columna que indica origen de la fila
+
+
+```r
+# Aumentar columna que indica origen de la fila
+bind_rows(list(data_1= df_1, data_2= df_2), .id = "DF_ORIGEN")
+```
+
+```
+##   DF_ORIGEN Nombre Edad Ciudad
+## 1    data_1    Ana   20    Gye
+## 2    data_1  Berni   19    Uio
+## 3    data_1 Carlos   20    Cue
+## 4    data_1 Daniel   19    Gye
+## 5    data_1 Ericka   18    Cue
+## 6    data_2 Fulton   21   Mach
+## 7    data_2  Gilda   18    Gye
+```
+
+
+---
+# Unir filas
+
+
+Bind más de dos dataframes
+
+
+```r
+# Bind más de dos dataframes
+bind_rows(list(df_1= df_1, df_2= df_2, df_3= df_3), .id = "DF_ORIGEN")
+```
+
+```
+##    DF_ORIGEN Nombre Edad Ciudad Estado_Civil
+## 1       df_1    Ana   20    Gye         &lt;NA&gt;
+## 2       df_1  Berni   19    Uio         &lt;NA&gt;
+## 3       df_1 Carlos   20    Cue         &lt;NA&gt;
+## 4       df_1 Daniel   19    Gye         &lt;NA&gt;
+## 5       df_1 Ericka   18    Cue         &lt;NA&gt;
+## 6       df_2 Fulton   21   Mach         &lt;NA&gt;
+## 7       df_2  Gilda   18    Gye         &lt;NA&gt;
+## 8       df_3   &lt;NA&gt;   NA   &lt;NA&gt;            S
+## 9       df_3   &lt;NA&gt;   NA   &lt;NA&gt;            D
+## 10      df_3   &lt;NA&gt;   NA   &lt;NA&gt;            S
+## 11      df_3   &lt;NA&gt;   NA   &lt;NA&gt;            C
+## 12      df_3   &lt;NA&gt;   NA   &lt;NA&gt;            D
+```
+
+
+---
+# Unir columnas
+
+
+Para unir columnas se usa bind_cols   
+
+
+```r
+# Bind más de dos dataframes
+bind_cols(df_1, df_3)
+```
+
+```
+##   Nombre Edad Ciudad Estado_Civil
+## 1    Ana   20    Gye            S
+## 2  Berni   19    Uio            D
+## 3 Carlos   20    Cue            S
+## 4 Daniel   19    Gye            C
+## 5 Ericka   18    Cue            D
+```
+
+
+---
+# Unir columnas
+
+
+Para unir columnas se usa bind_cols, se requiere que los datos tengan el mismo largo
+
+
+```r
+# Bind más de dos dataframes
+bind_cols(df_1, df_2) #ERROR
+```
+
+
+
+---
+# Unir datos - Merge|Join|Buscarv
+
+
+- Se tienen dos data.frames con columnas o variables que hacen las veces de “key” o “id” de los mismos
+
+- Se desea agregar al primer conjunto el contenido del segundo conjunto de datos si y sólo si el “key” o “id” del segundo conjunto corresponde con el “key” o “id” del primer conjunto de datos. 
+
+- Parecido al Buscarv y Vlookup de excel  
+
+- Equivalente al Join de Bases de datos
+
+
+
+
+
+---
+# Unir datos - Merge|Join|Buscarv
+
+
+Entendiendo los tipos de Join
+&lt;img src="Imagenes/join-venn.png" width="1469" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+# Unir datos - Merge|Join|Buscarv
+
+
+Nuevo data.frame
+
+```r
+df_6 &lt;- data.frame(A= c('Ana', 'Daniel','Jose'), B= c(100,200,300))
+df_6
+```
+
+```
+##        A   B
+## 1    Ana 100
+## 2 Daniel 200
+## 3   Jose 300
+```
+
+
+
+---
+# Unir datos - Merge|Join|Buscarv
+
+
+En base R se usaba el comando `Merge` 
+
+```r
+# Inner Join
+merge(x= df_1, y= df_6, by.x= 'Nombre', by.y= 'A')
+# Right Join
+merge(x= df_1, y= df_6, by.x= 'Nombre', by.y= 'A', all.x= TRUE)
+# Left Join
+merge(x= df_1, y= df_6, by.x= 'Nombre', by.y= 'A', all.y= TRUE)
+# Full Join
+merge(x= df_1, y= df_6, by.x= 'Nombre', by.y= 'A', all= TRUE)
+```
+
+---
+# Unir datos - Inner Join
+
+
+
+
+```r
+df_1 %&gt;% inner_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2 Daniel   19    Gye 200
+```
+
+
+---
+# Unir datos - Left Join
+
+
+
+
+```r
+df_1 %&gt;% left_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2  Berni   19    Uio  NA
+## 3 Carlos   20    Cue  NA
+## 4 Daniel   19    Gye 200
+## 5 Ericka   18    Cue  NA
+```
+
+
+---
+# Unir datos - Right Join
+
+
+
+
+```r
+df_1 %&gt;% right_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2 Daniel   19    Gye 200
+## 3   Jose   NA   &lt;NA&gt; 300
+```
+
+
+---
+# Unir datos - Full Join
+
+
+
+
+```r
+df_1 %&gt;% full_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2  Berni   19    Uio  NA
+## 3 Carlos   20    Cue  NA
+## 4 Daniel   19    Gye 200
+## 5 Ericka   18    Cue  NA
+## 6   Jose   NA   &lt;NA&gt; 300
+```
+
+
+---
+# Unir datos - Merge|Join|Buscarv
+
+
+Vamos a duplicar un Valor en df_6 y a replicar los Joins para revisar qué sucede cuando se tiene "key" no únicos
+
+```r
+df_6 &lt;- data.frame(A= c('Ana', 'Daniel','Jose', 'Ana'), B= c(100,200,300, 110))
+df_6
+```
+
+```
+##        A   B
+## 1    Ana 100
+## 2 Daniel 200
+## 3   Jose 300
+## 4    Ana 110
+```
+
+
+
+---
+# Unir datos - Inner Join
+
+
+Nótese la repetición de "Ana"
+
+```r
+df_1 %&gt;% inner_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2    Ana   20    Gye 110
+## 3 Daniel   19    Gye 200
+```
+
+
+---
+# Unir datos - Left Join
+
+
+Nótese la repetición de "Ana"
+
+```r
+df_1 %&gt;% left_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2    Ana   20    Gye 110
+## 3  Berni   19    Uio  NA
+## 4 Carlos   20    Cue  NA
+## 5 Daniel   19    Gye 200
+## 6 Ericka   18    Cue  NA
+```
+
+
+---
+# Unir datos - Right Join
+
+
+Nótese la repetición de "Ana"
+
+```r
+df_1 %&gt;% right_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2    Ana   20    Gye 110
+## 3 Daniel   19    Gye 200
+## 4   Jose   NA   &lt;NA&gt; 300
+```
+
+
+---
+# Unir datos - Full Join
+
+
+Nótese la repetición de "Ana"
+
+```r
+df_1 %&gt;% full_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2    Ana   20    Gye 110
+## 3  Berni   19    Uio  NA
+## 4 Carlos   20    Cue  NA
+## 5 Daniel   19    Gye 200
+## 6 Ericka   18    Cue  NA
+## 7   Jose   NA   &lt;NA&gt; 300
+```
+
+
+
+---
+# Unir datos 
+
+
+Y ¿si repetimos "Ana" en el df_1?
+
+
+
+---
+# Unir datos 
+
+
+Y si repetimos "Ana" en el df_1?
+
+```r
+df_1 %&gt;% 
+  bind_rows( data.frame(Nombre="Ana", Edad= 42, Ciudad= 'Cue')) %&gt;%
+  full_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad   B
+## 1    Ana   20    Gye 100
+## 2    Ana   20    Gye 110
+## 3  Berni   19    Uio  NA
+## 4 Carlos   20    Cue  NA
+## 5 Daniel   19    Gye 200
+## 6 Ericka   18    Cue  NA
+## 7    Ana   42    Cue 100
+## 8    Ana   42    Cue 110
+## 9   Jose   NA   &lt;NA&gt; 300
+```
+
+
+---
+# Filterin Joins
+
+
+semi_join (x, y) da todas las observaciones en x que tienen al menos una coincidencia en y.
+
+
+```r
+df_1 %&gt;% semi_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad
+## 1    Ana   20    Gye
+## 2 Daniel   19    Gye
+```
+
+
+
+---
+# Filterin Joins
+
+
+anti_join (x, y) da todas las observaciones en x que NO tienen coincidencia en y.
+
+
+```r
+df_1 %&gt;% anti_join(df_6, by = c("Nombre"="A")) 
+```
+
+```
+##   Nombre Edad Ciudad
+## 1  Berni   19    Uio
+## 2 Carlos   20    Cue
+## 3 Ericka   18    Cue
+```
+
+
+
+---
+# Join - Ejemplo transacciones bancarias
+
+
+¿Qué join necesitamos realizar con nuestros datos?
+
+```r
+View(data_banco)
+View(data_sucursal)
+```
+
+
+---
+# Join - Ejemplo transacciones bancarias
+
+
+Esto nos dará error, ¿Qué falta?
+
+```r
+data_banco %&gt;%
+  left_join(data_sucursal, by= c("Sucursal"= "ID_Sucursal"))
+```
+
+
+
+---
+# Join - Ejemplo transacciones bancarias
+
+
+Esto nos dará error, ¿Qué falta?   
+R: Corregir tipo de datos
+
+
+```r
+data_sucursal &lt;- data_sucursal %&gt;%
+  mutate(ID_Sucursal= as.character(ID_Sucursal))
+data_sucursal
+```
+
+```
+## # A tibble: 5 x 3
+##   ID_Sucursal Sucursal      Nuevo_Sistema
+##   &lt;chr&gt;       &lt;chr&gt;         &lt;chr&gt;        
+## 1 62          Riocentro Sur No           
+## 2 85          Centro        Si           
+## 3 267         Alborada      Si           
+## 4 443         Mall del Sol  Si           
+## 5 586         Via Daule     No
+```
+
+
+---
+# Join - Ejemplo transacciones bancarias
+
+
+Nótese el problema con el nombre "Sucursal"
+
+
+```r
+data_banco %&gt;%
+  left_join(data_sucursal, by= c("Sucursal"= "ID_Sucursal"))
+```
+
+```
+## # A tibble: 24,299 x 9
+##    Sucursal Cajero ID_Transaccion Transaccion Tiempo_Servicio~ Satisfaccion
+##    &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;          &lt;chr&gt;                  &lt;dbl&gt; &lt;fct&gt;       
+##  1 62       4820   2              Cobro/Pago~              311 Muy Bueno   
+##  2 62       4820   2              Cobro/Pago~              156 Malo        
+##  3 62       4820   2              Cobro/Pago~              248 Regular     
+##  4 62       4820   2              Cobro/Pago~               99 Regular     
+##  5 62       4820   2              Cobro/Pago~              123 Muy Bueno   
+##  6 62       4820   2              Cobro/Pago~              172 Bueno       
+##  7 62       4820   2              Cobro/Pago~              140 Regular     
+##  8 62       4820   2              Cobro/Pago~              247 Bueno       
+##  9 62       4820   2              Cobro/Pago~              183 Muy Bueno   
+## 10 62       4820   2              Cobro/Pago~               91 Muy Bueno   
+## # ... with 24,289 more rows, and 3 more variables: Monto &lt;dbl&gt;,
+## #   Sucursal.y &lt;chr&gt;, Nuevo_Sistema &lt;chr&gt;
+```
+
+
+
+---
+# Join - Ejemplo transacciones bancarias
+
+
+Cambiamos el nombre y ya reemplazamos el data_banco con este resultado
+
+```r
+data_banco &lt;- data_banco %&gt;%
+  rename("ID_Sucursal"="Sucursal") %&gt;%
+  left_join(data_sucursal, by= c("ID_Sucursal"))
+data_banco
+```
+
+```
+## # A tibble: 24,299 x 9
+##    ID_Sucursal Cajero ID_Transaccion Transaccion Tiempo_Servicio~ Satisfaccion
+##    &lt;chr&gt;       &lt;chr&gt;  &lt;chr&gt;          &lt;chr&gt;                  &lt;dbl&gt; &lt;fct&gt;       
+##  1 62          4820   2              Cobro/Pago~              311 Muy Bueno   
+##  2 62          4820   2              Cobro/Pago~              156 Malo        
+##  3 62          4820   2              Cobro/Pago~              248 Regular     
+##  4 62          4820   2              Cobro/Pago~               99 Regular     
+##  5 62          4820   2              Cobro/Pago~              123 Muy Bueno   
+##  6 62          4820   2              Cobro/Pago~              172 Bueno       
+##  7 62          4820   2              Cobro/Pago~              140 Regular     
+##  8 62          4820   2              Cobro/Pago~              247 Bueno       
+##  9 62          4820   2              Cobro/Pago~              183 Muy Bueno   
+## 10 62          4820   2              Cobro/Pago~               91 Muy Bueno   
+## # ... with 24,289 more rows, and 3 more variables: Monto &lt;dbl&gt;, Sucursal &lt;chr&gt;,
+## #   Nuevo_Sistema &lt;chr&gt;
+```
+
+
+
+
+---
+# Ejemplo transacciones bancarias
+
+
+El data_banco ahora es
+
+```r
+glimpse(data_banco)
+```
+
+```
+## Rows: 24,299
+## Columns: 9
+## $ ID_Sucursal         &lt;chr&gt; "62", "62", "62", "62", "62", "62", "62", "62",...
+## $ Cajero              &lt;chr&gt; "4820", "4820", "4820", "4820", "4820", "4820",...
+## $ ID_Transaccion      &lt;chr&gt; "2", "2", "2", "2", "2", "2", "2", "2", "2", "2...
+## $ Transaccion         &lt;chr&gt; "Cobro/Pago (Cta externa)", "Cobro/Pago (Cta ex...
+## $ Tiempo_Servicio_seg &lt;dbl&gt; 311, 156, 248, 99, 123, 172, 140, 247, 183, 91,...
+## $ Satisfaccion        &lt;fct&gt; Muy Bueno, Malo, Regular, Regular, Muy Bueno, B...
+## $ Monto               &lt;dbl&gt; 2889.30, 1670.69, 3172.49, 1764.92, 1835.69, 21...
+## $ Sucursal            &lt;chr&gt; "Riocentro Sur", "Riocentro Sur", "Riocentro Su...
+## $ Nuevo_Sistema       &lt;chr&gt; "No", "No", "No", "No", "No", "No", "No", "No",...
+```
+
+
+
+
+
+---
+class: inverse, center, middle, hide_logo
+
+# FIN
+
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
