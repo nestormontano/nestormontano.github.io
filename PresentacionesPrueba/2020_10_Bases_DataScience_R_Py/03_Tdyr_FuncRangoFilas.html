@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Ordenar los datos y aplicar funciones por Rangos</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Zulemma Bazurto / Néstor Montaño" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra_fit-screen/fit-screen.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Ordenar los datos y aplicar funciones por Rangos
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+### Sociedad Ecuatoriana de Estadística
+### Octubre-2020
+
+---
+
+class: hide_logo 
+background-image: url("Imagenes/Logo-BanderaCorregida_con_curva_peque.png")
+
+
+&lt;style type="text/css"&gt;
+.huge .remark-code { /*Change made here*/
+  font-size: 150% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 75% !important;
+}
+
+&lt;/style&gt;
+
+<div>
+<style type="text/css">.xaringan-extra-logo {
+width: 800px;
+height: 50px;
+z-index: 0;
+background-image: url(Imagenes/Top_Logo.png);
+background-size: contain;
+background-repeat: no-repeat;
+position: absolute;
+top:0;right:0.4em;
+}
+</style>
+<script>(function () {
+  let tries = 0
+  function addLogo () {
+    if (typeof slideshow === 'undefined') {
+      tries += 1
+      if (tries < 10) {
+        setTimeout(addLogo, 100)
+      }
+    } else {
+      document.querySelectorAll('.remark-slide-content:not(.title-slide):not(.inverse):not(.hide_logo)')
+        .forEach(function (slide) {
+          const logo = document.createElement('div')
+          logo.classList = 'xaringan-extra-logo'
+          logo.href = null
+          slide.appendChild(logo)
+        })
+    }
+  }
+  document.addEventListener('DOMContentLoaded', addLogo)
+})()</script>
+</div>
+
+
+---
+
+.footnote[
+**Nota:**  
+Con *Alt + F* o  *Option + F* puede hacer que estas dapositivas ocupen todo el navegador (es decir que se ignore el aspecto de diapositiva que tiene por default la presentación)
+]
+
+
+
+
+
+---
+# R - cargar librerías
+
+
+
+```r
+#### LIBRERIAS ------
+library(openxlsx) # para importar desde excel
+library(tidyverse) # manipulacion de datos
+library(ggplot2) # graficos
+library(magrittr) # %&gt;% 
+library(lubridate) # Manipulacion de fechas
+library(stringr) # Manipulacion de texto
+```
+
+
+---
+# Ejemplo: Transacciones bancarias
+
+
+El Banco del Pacífico requiere mejorar los tiempos de atención al cliente en ventanilla, para ello ha recolectado esta información anónimamente para cada cajero y transacción realizada.   
+
+Le suministran un excel con dos hojas:   
+
+1. Tiene los datos de las transacciones, columnas: Sucursal, Cajero, ID_Transaccion, Transaccion, Tiempo_Servicio_seg, Nivel de satisfacción, Monto de la transaccion. 
+2. Otra hoja que indica si en la sucursal se ha puesto o no el nuevo sistema.
+
+
+
+
+---
+# Ejemplo - Importar
+
+Importar las hojas del excel dado
+
+
+```r
+# Leer el archivo de excel y asignarlo al objeto data_banco
+data_banco &lt;- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data")
+data_sucursal &lt;- read.xlsx(xlsxFile = "Data/Data_Banco.xlsx", sheet = "Data_Sucursal")
+```
+
+
+
+
+---
+# Ejemplo - Convertir a tibbles (un dataframe mejorado): 			
+
+
+
+
+
+```r
+# Convertir el data_banco a un tibble
+data_banco &lt;- as_tibble( data_banco) 
+# Convertir el data_sucursal a un tibble
+data_sucursal &lt;- as_tibble(data_sucursal) 
+```
+
+
+
+
+---
+# Ejemplo - Manipulacion de datos
+
+
+
+Lo primero que necesitamos es corregir los tipos de datos, nótese que *Monto* tiene una mezcla de "," y ".".
+
+
+
+```r
+data_banco &lt;- data_banco %&gt;%
+  mutate( Monto= str_replace(Monto, pattern = ",", replacement = ".") ) %&gt;%
+  mutate(Sucursal= as.character(Sucursal),
+         Cajero = as.character(Cajero),
+         Satisfaccion = parse_factor(Satisfaccion, 
+                                     levels= c('Muy Malo', 'Malo', 'Regular', 
+                                               'Bueno', 'Muy Bueno')),
+         Monto= parse_number(Monto, locale = locale(decimal_mark = "."))) 
+```
+
+
+
+
+---
+# Ejemplo - Manipulacion de datos
+
+Queremos unir la data de la sucursal con la de transacciones por medio del código de la sucursal, para esto se necesita primero corregir el tipos de dato para el join y luego se realiza el join.
+
+
+
+
+```r
+# Corregir ID Sucursal
+data_sucursal &lt;- data_sucursal %&gt;%
+  mutate(ID_Sucursal= as.character(ID_Sucursal))
+# Join
+data_banco &lt;- data_banco %&gt;%
+  rename("ID_Sucursal"="Sucursal") %&gt;%
+  left_join(data_sucursal, by= c("ID_Sucursal"))
+```
+
+
+
+
+
+---
+# Ejemplo - Manipulacion de datos
+
+Con todo esto hemos llegado a:
+
+
+
+```r
+# Mostrar estructura del data_banco
+glimpse(data_banco)
+```
+
+```
+## Rows: 24,299
+## Columns: 9
+## $ ID_Sucursal         &lt;chr&gt; "62", "62", "62", "62", "62", "62", "62", "62",...
+## $ Cajero              &lt;chr&gt; "4820", "4820", "4820", "4820", "4820", "4820",...
+## $ ID_Transaccion      &lt;chr&gt; "2", "2", "2", "2", "2", "2", "2", "2", "2", "2...
+## $ Transaccion         &lt;chr&gt; "Cobro/Pago (Cta externa)", "Cobro/Pago (Cta ex...
+## $ Tiempo_Servicio_seg &lt;dbl&gt; 311, 156, 248, 99, 123, 172, 140, 247, 183, 91,...
+## $ Satisfaccion        &lt;fct&gt; Muy Bueno, Malo, Regular, Regular, Muy Bueno, B...
+## $ Monto               &lt;dbl&gt; 2889.30, 1670.69, 3172.49, 1764.92, 1835.69, 21...
+## $ Sucursal            &lt;chr&gt; "Riocentro Sur", "Riocentro Sur", "Riocentro Su...
+## $ Nuevo_Sistema       &lt;chr&gt; "No", "No", "No", "No", "No", "No", "No", "No",...
+```
+
+
+
+
+
+---
+class: center, middle, hide_logo
+
+# Tidy: Ordenar los datos
+
+## Introducción a R
+
+
+
+---
+class: hide_logo 
+background-image: url("Imagenes/RezasNuevaDataLimpiezaValidacionPreprocesamiento.png")
+
+
+
+---
+# Tidy: Ordenar los datos
+
+## El objetivo de este capítulo es aprender comandos que nos den más herramientas para realizar el preprocesamiento de nuestra data, sobre todo pensando en que es común que nuestro punto de partida sea un excel que antes ha sido manipulado por otras personas.
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+
+Suponga que se quiere evaluar los casos de cierta enfermedad en un conjunto de países; nosotros normalmente deseamos tener los datos de esta manera:
+
+```r
+table1
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+
+Sin embargo nos lo pueden dar así:
+
+```r
+table2
+```
+
+```
+## # A tibble: 12 x 4
+##    country      year type            count
+##    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;           &lt;int&gt;
+##  1 Afghanistan  1999 cases             745
+##  2 Afghanistan  1999 population   19987071
+##  3 Afghanistan  2000 cases            2666
+##  4 Afghanistan  2000 population   20595360
+##  5 Brazil       1999 cases           37737
+##  6 Brazil       1999 population  172006362
+##  7 Brazil       2000 cases           80488
+##  8 Brazil       2000 population  174504898
+##  9 China        1999 cases          212258
+## 10 China        1999 population 1272915272
+## 11 China        2000 cases          213766
+## 12 China        2000 population 1280428583
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+
+O así:
+
+```r
+table3
+```
+
+```
+## # A tibble: 6 x 3
+##   country      year rate             
+## * &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;            
+## 1 Afghanistan  1999 745/19987071     
+## 2 Afghanistan  2000 2666/20595360    
+## 3 Brazil       1999 37737/172006362  
+## 4 Brazil       2000 80488/174504898  
+## 5 China        1999 212258/1272915272
+## 6 China        2000 213766/1280428583
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+
+O así:
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 x 3
+##   country     `1999` `2000`
+## * &lt;chr&gt;        &lt;int&gt;  &lt;int&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+
+O así:
+
+```r
+table4b
+```
+
+```
+## # A tibble: 3 x 3
+##   country         `1999`     `2000`
+## * &lt;chr&gt;            &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan   19987071   20595360
+## 2 Brazil       172006362  174504898
+## 3 China       1272915272 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+En la mayoría de los casos, antes de realizar nuestros análisis debemos reordenar los datos en algún software como excel para cumplir lo siguiente
+
+- Que cada columna sea una variable
+- Que cada fila sea una observación (granularidad)
+- Que cada celda sea el valor de la variable para la observación
+
+&lt;img src="Imagenes/tidy-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Gráfico tomado del libro R for Data Science, https://r4ds.had.co.nz/
+]
+
+
+
+---
+# Tidy: Ordenar los datos
+
+En el conjunto  `table1` se puede ver que la granularidad de la información es País, Año, mientras que las variables son: Casos y Población.
+
+
+```r
+table1
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Datos ordenados nos permiten trabajar fácilmente con ellos.
+
+
+```r
+# Calcular un ratio por cada 10 mil habitantes
+table1 %&gt;% 
+  mutate(rate = cases / population * 10000) 
+```
+
+```
+## # A tibble: 6 x 5
+##   country      year  cases population  rate
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt; &lt;dbl&gt;
+## 1 Afghanistan  1999    745   19987071 0.373
+## 2 Afghanistan  2000   2666   20595360 1.29 
+## 3 Brazil       1999  37737  172006362 2.19 
+## 4 Brazil       2000  80488  174504898 4.61 
+## 5 China        1999 212258 1272915272 1.67 
+## 6 China        2000 213766 1280428583 1.67
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Datos ordenados nos permiten trabajar fácilmente con ellos.
+
+
+
+```r
+# Calcular casos por año
+table1 %&gt;% 
+  count(year, wt = cases)
+```
+
+```
+## # A tibble: 2 x 2
+##    year      n
+##   &lt;int&gt;  &lt;int&gt;
+## 1  1999 250740
+## 2  2000 296920
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+`spread()`- Se lo usa cuando una observación está en diferentes filas
+
+
+```r
+table2 
+```
+
+```
+## # A tibble: 12 x 4
+##    country      year type            count
+##    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;           &lt;int&gt;
+##  1 Afghanistan  1999 cases             745
+##  2 Afghanistan  1999 population   19987071
+##  3 Afghanistan  2000 cases            2666
+##  4 Afghanistan  2000 population   20595360
+##  5 Brazil       1999 cases           37737
+##  6 Brazil       1999 population  172006362
+##  7 Brazil       2000 cases           80488
+##  8 Brazil       2000 population  174504898
+##  9 China        1999 cases          212258
+## 10 China        1999 population 1272915272
+## 11 China        2000 cases          213766
+## 12 China        2000 population 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Comparando `table2` con `table1`
+
+- ¿Qué columna tiene los nombres de las columnas?
+- ¿Qué columna contiene los valores observados?
+
+```r
+table2 
+```
+
+```
+## # A tibble: 12 x 4
+##    country      year type            count
+##    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;           &lt;int&gt;
+##  1 Afghanistan  1999 cases             745
+##  2 Afghanistan  1999 population   19987071
+##  3 Afghanistan  2000 cases            2666
+##  4 Afghanistan  2000 population   20595360
+##  5 Brazil       1999 cases           37737
+##  6 Brazil       1999 population  172006362
+##  7 Brazil       2000 cases           80488
+##  8 Brazil       2000 population  174504898
+##  9 China        1999 cases          212258
+## 10 China        1999 population 1272915272
+## 11 China        2000 cases          213766
+## 12 China        2000 population 1280428583
+```
+ 
+ 
+ 
+ 
+---
+# Tidy: Ordenar los datos
+
+Comparando `table2` con `table1`
+
+- ¿Qué columna tiene los nombres de las columnas? **type**   
+- ¿Qué columna contiene los valores observados? **count**
+
+```r
+table2 
+```
+
+```
+## # A tibble: 12 x 4
+##    country      year type            count
+##    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;           &lt;int&gt;
+##  1 Afghanistan  1999 cases             745
+##  2 Afghanistan  1999 population   19987071
+##  3 Afghanistan  2000 cases            2666
+##  4 Afghanistan  2000 population   20595360
+##  5 Brazil       1999 cases           37737
+##  6 Brazil       1999 population  172006362
+##  7 Brazil       2000 cases           80488
+##  8 Brazil       2000 population  174504898
+##  9 China        1999 cases          212258
+## 10 China        1999 population 1272915272
+## 11 China        2000 cases          213766
+## 12 China        2000 population 1280428583
+```
+ 
+ 
+ 
+---
+# Tidy: Ordenar los datos
+
+Para convertir `table2` en datos ordenados se usa spread()
+
+
+```r
+# Aplicar spread a table2
+spread(table2, key = type, value = count)
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+spread() transforma el 'key' en columnas y el 'value' en el valor de la observación
+
+
+&lt;img src="Imagenes/Spread.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Gráfico tomado del libro R for Data Science, https://r4ds.had.co.nz/
+]
+
+
+ 
+---
+# Tidy: Ordenar los datos
+
+Para convertir `table2` en datos ordenados también se usa pivot_wider()
+
+
+```r
+# Aplicar pivot_wider a table2
+table2 %&gt;% pivot_wider(
+  names_from = type,   
+  values_from = count,
+  values_fill = 0)
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Además pivot_wider() permite combinar niveles de diferentes variables en las columnas y así también definir cómo se juntarán los nombres.
+
+
+```r
+# Aplicar pivot_wider a table2
+table2 %&gt;% pivot_wider(
+  names_from = c(type, year),   
+  names_glue = "{type}-{year}", # No es necesario
+  values_from = count,
+  values_fill = 0 )
+```
+
+```
+## # A tibble: 3 x 5
+##   country     `cases-1999` `population-1999` `cases-2000` `population-2000`
+##   &lt;chr&gt;              &lt;int&gt;             &lt;int&gt;        &lt;int&gt;             &lt;int&gt;
+## 1 Afghanistan          745          19987071         2666          20595360
+## 2 Brazil             37737         172006362        80488         174504898
+## 3 China             212258        1272915272       213766        1280428583
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+Además pivot_wider() permite combinar niveles de diferentes variables en las columnas y así también definir cómo se juntarán los nombres.
+
+
+```r
+# Aplicar pivot_wider a table2
+table2 %&gt;% pivot_wider(
+  names_from = c(country, type),   
+  values_from = c(count),
+  values_fill = 0 )
+```
+
+```
+## # A tibble: 2 x 7
+##    year Afghanistan_cas~ Afghanistan_pop~ Brazil_cases Brazil_populati~
+##   &lt;int&gt;            &lt;int&gt;            &lt;int&gt;        &lt;int&gt;            &lt;int&gt;
+## 1  1999              745         19987071        37737        172006362
+## 2  2000             2666         20595360        80488        174504898
+## # ... with 2 more variables: China_cases &lt;int&gt;, China_population &lt;int&gt;
+```
+
+ 
+---
+# Tidy: Ordenar los datos
+
+pivot_wider() tambien permite hacer cálculos, vamos a obtener la suma de casos de ambos años, primero se seleciona las columnas (country, type, count) y miren lo que sucede al hacer el pivot_wider()
+
+
+```r
+# Aplicar pivot_wider a table2
+table2 %&gt;% 
+  select(country, type, count) %&gt;% 
+  pivot_wider(
+  names_from = type,   
+  values_from = count)
+```
+
+```
+## Warning: Values are not uniquely identified; output will contain list-cols.
+## * Use `values_fn = list` to suppress this warning.
+## * Use `values_fn = length` to identify where the duplicates arise
+## * Use `values_fn = {summary_fun}` to summarise duplicates
+```
+
+```
+## # A tibble: 3 x 3
+##   country     cases     population
+##   &lt;chr&gt;       &lt;list&gt;    &lt;list&gt;    
+## 1 Afghanistan &lt;int [2]&gt; &lt;int [2]&gt; 
+## 2 Brazil      &lt;int [2]&gt; &lt;int [2]&gt; 
+## 3 China       &lt;int [2]&gt; &lt;int [2]&gt;
+```
+
+
+ 
+---
+# Tidy: Ordenar los datos
+
+pivot_wider() tambien permite hacer cálculos, vamos a obtener la suma de casos de ambos años, primero se seleciona las columnas (country, type, count) y ahora en pivot_wider se define una funcion a aplicar al vector de 2 que hay en cada celda.
+
+
+```r
+# Aplicar pivot_wider a table2
+table2 %&gt;% 
+  select(country, type, count) %&gt;% 
+  pivot_wider(
+  names_from = type,   
+  values_from = count,
+  values_fn= sum)
+```
+
+```
+## # A tibble: 3 x 3
+##   country      cases population
+##   &lt;chr&gt;        &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Afghanistan   3411   40582431
+## 2 Brazil      118225  346511260
+## 3 China       426024 2553343855
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Gather- Se lo usa cuando se tiene datos parecidos a tablas cruzadas
+
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 x 3
+##   country     `1999` `2000`
+## * &lt;chr&gt;        &lt;int&gt;  &lt;int&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+¿Qué variables parece que se están cruzando en el table4a?
+¿Qué valor ha tomado como dato para la tabla cruzada?
+
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 x 3
+##   country     `1999` `2000`
+## * &lt;chr&gt;        &lt;int&gt;  &lt;int&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+¿Qué variables parece que se están cruzando en el table4a? **País y Año**    
+¿Qué valor ha tomado como dato para la tabla cruzada? **Casos**
+
+
+```r
+table4a
+```
+
+```
+## # A tibble: 3 x 3
+##   country     `1999` `2000`
+## * &lt;chr&gt;        &lt;int&gt;  &lt;int&gt;
+## 1 Afghanistan    745   2666
+## 2 Brazil       37737  80488
+## 3 China       212258 213766
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+Para convertir `table4a` en datos ordenados se usa `gather()`
+
+
+```r
+table4a %&gt;% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+```
+## # A tibble: 6 x 3
+##   country     year   cases
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;int&gt;
+## 1 Afghanistan 1999     745
+## 2 Brazil      1999   37737
+## 3 China       1999  212258
+## 4 Afghanistan 2000    2666
+## 5 Brazil      2000   80488
+## 6 China       2000  213766
+```
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+`gather()` transforma los nombres de columnas dados como la nueva columna "key" y los valores de las celdas pasan a la columna "value".
+
+
+&lt;img src="Imagenes/Gather.png" width="2560" style="display: block; margin: auto;" /&gt;
+.footnote[
+Gráfico tomado del libro R for Data Science, https://r4ds.had.co.nz/
+]
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Para convertir `table4a` en datos ordenados también se puede usar `pivot_longer()`
+
+
+```
+## # A tibble: 6 x 3
+##   country     year   cases
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;int&gt;
+## 1 Afghanistan 1999     745
+## 2 Afghanistan 2000    2666
+## 3 Brazil      1999   37737
+## 4 Brazil      2000   80488
+## 5 China       1999  212258
+## 6 China       2000  213766
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+Para convertir `table4a` en datos ordenados también se puede usar `pivot_longer()`
+
+
+```
+## # A tibble: 6 x 3
+##   country     year   cases
+##   &lt;chr&gt;       &lt;chr&gt;  &lt;int&gt;
+## 1 Afghanistan 1999     745
+## 2 Afghanistan 2000    2666
+## 3 Brazil      1999   37737
+## 4 Brazil      2000   80488
+## 5 China       1999  212258
+## 6 China       2000  213766
+```
+
+
+
+
+
+
+---
+# Tidy: Ordenar los datos
+
+`Separate()` Permite disociar alguna columna que esté concatenada  
+
+
+```r
+table3
+```
+
+```
+## # A tibble: 6 x 3
+##   country      year rate             
+## * &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;            
+## 1 Afghanistan  1999 745/19987071     
+## 2 Afghanistan  2000 2666/20595360    
+## 3 Brazil       1999 37737/172006362  
+## 4 Brazil       2000 80488/174504898  
+## 5 China        1999 212258/1272915272
+## 6 China        2000 213766/1280428583
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+¿Qué columna parece estar concatenada?
+
+
+```r
+table3
+```
+
+```
+## # A tibble: 6 x 3
+##   country      year rate             
+## * &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;            
+## 1 Afghanistan  1999 745/19987071     
+## 2 Afghanistan  2000 2666/20595360    
+## 3 Brazil       1999 37737/172006362  
+## 4 Brazil       2000 80488/174504898  
+## 5 China        1999 212258/1272915272
+## 6 China        2000 213766/1280428583
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+¿Qué columna parece estar concatenada? **rate**
+
+
+```r
+table3
+```
+
+```
+## # A tibble: 6 x 3
+##   country      year rate             
+## * &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;            
+## 1 Afghanistan  1999 745/19987071     
+## 2 Afghanistan  2000 2666/20595360    
+## 3 Brazil       1999 37737/172006362  
+## 4 Brazil       2000 80488/174504898  
+## 5 China        1999 212258/1272915272
+## 6 China        2000 213766/1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+`separate()` Permite disociar alguna columna que esté concatenada  
+
+
+```r
+table3 %&gt;% 
+  separate(rate, into = c("cases", "population"), sep = "/")
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year cases  population
+##   &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;  &lt;chr&gt;     
+## 1 Afghanistan  1999 745    19987071  
+## 2 Afghanistan  2000 2666   20595360  
+## 3 Brazil       1999 37737  172006362 
+## 4 Brazil       2000 80488  174504898 
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Con convert= TRUE se transforma a número
+
+
+```r
+table3 %&gt;% 
+  separate(rate, into = c("cases", "population"), sep = "/", convert = TRUE)
+```
+
+```
+## # A tibble: 6 x 4
+##   country      year  cases population
+##   &lt;chr&gt;       &lt;int&gt;  &lt;int&gt;      &lt;int&gt;
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
+## 5 China        1999 212258 1272915272
+## 6 China        2000 213766 1280428583
+```
+
+
+
+---
+# Tidy: Ordenar los datos
+
+Cuando nos pasan información procedentes de tablas dinámicas puede pasar que se nombra el primer valor y lo de abajo se asume es lo mismo
+
+
+```r
+treatment &lt;- tribble(
+  ~ person,           ~ treatment, ~response,
+  "Derrick Whitmore", 1,           7,
+  NA,                 2,           10,
+  NA,                 3,           9,
+  "Katherine Burke",  1,           4
+)
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+Con `fill()` se pueden llenar los NA
+
+
+```r
+treatment
+```
+
+```
+## # A tibble: 4 x 3
+##   person           treatment response
+##   &lt;chr&gt;                &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Derrick Whitmore         1        7
+## 2 &lt;NA&gt;                     2       10
+## 3 &lt;NA&gt;                     3        9
+## 4 Katherine Burke          1        4
+```
+
+
+---
+# Tidy: Ordenar los datos
+
+Con `fill()` se pueden llenar los NA
+
+
+```r
+treatment %&gt;% 
+  fill(person)
+```
+
+```
+## # A tibble: 4 x 3
+##   person           treatment response
+##   &lt;chr&gt;                &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Derrick Whitmore         1        7
+## 2 Derrick Whitmore         2       10
+## 3 Derrick Whitmore         3        9
+## 4 Katherine Burke          1        4
+```
+
+
+
+
+---
+class: center, middle, hide_logo
+
+# Crear reportes específicos usando lo aprendido con Tidyr
+
+## Introducción a R
+
+
+
+
+---
+class: tiny
+# Aplicando Tidyr - Construir reportes específicos 
+
+
+Obtener estadísticas del tiempo de servicio por Sucursal, pero mapeando la Sucrusal a nivel de columna  
+ 
+ 
+.pull-left[
+
+```r
+# Primera parte, calculos
+data_banco %&gt;% 
+  group_by(Sucursal) %&gt;% 
+  summarise(
+    tibble(
+      Estadistico = c("Min", "Q1", "Mediana", 
+                      "Q3", "Max", "Media", "Desv"), 
+      Valor= c(quantile(Tiempo_Servicio_seg,
+                        c(0, 0.25, 0.5, 0.75, 1)), 
+               mean(Tiempo_Servicio_seg, na.rm= T),
+               sd(Tiempo_Servicio_seg, na.rm= T)
+              )
+      )
+    )
+```
+]
+
+.pull-right[
+
+```
+## `summarise()` regrouping output by 'Sucursal' (override with `.groups` argument)
+```
+
+```
+## # A tibble: 35 x 3
+## # Groups:   Sucursal [5]
+##    Sucursal Estadistico  Valor
+##    &lt;chr&gt;    &lt;chr&gt;        &lt;dbl&gt;
+##  1 Alborada Min           21.0
+##  2 Alborada Q1            93.3
+##  3 Alborada Mediana      148. 
+##  4 Alborada Q3           231. 
+##  5 Alborada Max         1082. 
+##  6 Alborada Media        183. 
+##  7 Alborada Desv         131. 
+##  8 Centro   Min           18.1
+##  9 Centro   Q1            85.2
+## 10 Centro   Mediana      136. 
+## # ... with 25 more rows
+```
+]
+
+
+
+
+
+---
+class: tiny
+# Aplicando Tidyr - Construir reportes específicos 
+
+
+Obtener estadísticas del tiempo de servicio por Sucursal, pero mapeando la Sucursal a nivel de columna  
+
+.pull-left[
+
+```r
+# Primera parte, calculos
+data_banco %&gt;% 
+  group_by(Sucursal) %&gt;% 
+  summarise(
+    tibble(
+      Estadistico = c("Min", "Q1", "Mediana", 
+                      "Q3", "Max", "Media", "Desv"), 
+      Valor= c(quantile(Tiempo_Servicio_seg,
+                        c(0, 0.25, 0.5, 0.75, 1)), 
+               mean(Tiempo_Servicio_seg, na.rm= T),
+               sd(Tiempo_Servicio_seg, na.rm= T)
+              )
+      )
+    ) %&gt;% 
+* pivot_wider(
+*   names_from = Sucursal,
+*   values_from= Valor)
+```
+]
+
+.pull-right[
+
+```
+## `summarise()` regrouping output by 'Sucursal' (override with `.groups` argument)
+```
+
+```
+## # A tibble: 7 x 6
+##   Estadistico Alborada Centro `Mall del Sol` `Riocentro Sur` `Via Daule`
+##   &lt;chr&gt;          &lt;dbl&gt;  &lt;dbl&gt;          &lt;dbl&gt;           &lt;dbl&gt;       &lt;dbl&gt;
+## 1 Min             21.0   18.1           24.4            20          20  
+## 2 Q1              93.3   85.2           90.5            49          48  
+## 3 Mediana        148.   136.           144.             76          71  
+## 4 Q3             231.   208.           228.            111         103. 
+## 5 Max           1082.  1603.          1213.            522         380  
+## 6 Media          183.   166.           181.             89.4        82.3
+## 7 Desv           131.   121.           133.             57.9        49.1
+```
+]
+
+
+
+
+
+---
+class: tiny
+# Aplicando Tidyr - Construir reportes específicos 
+
+
+Obtener la media del tiempo de servicio y del monto pero mostrar las variables como filas  
+
+
+.pull-left[
+
+```r
+# Obtener la media del tiempo de servicio y del monto
+# Pero mostrar las variables como filas
+# Se debe tener cuidado con los nombres
+data_banco %&gt;% 
+  rename(TiempoServicioSeg= Tiempo_Servicio_seg) %&gt;%
+  summarise_at( vars(TiempoServicioSeg, Monto), 
+                list(
+                  Media= ~mean(., na.rm=TRUE), 
+                  MediaAcot= ~mean(., na.rm = TRUE, 
+                                   trim = 0.05),
+                  Cantidad= ~n()
+                )
+  ) %&gt;%
+  gather %&gt;% 
+  separate(key, c("Var","Medida"), sep = "_") %&gt;% 
+  spread(Medida, value)
+```
+]
+
+.pull-right[
+
+```
+## # A tibble: 2 x 4
+##   Var               Cantidad Media MediaAcot
+##   &lt;chr&gt;                &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+## 1 Monto                24299 1996.     1983.
+## 2 TiempoServicioSeg    24299  156.      142.
+```
+]
+
+
+
+
+
+
+---
+class: center, middle, hide_logo
+
+# Funciones a rangos de filas
+
+## Introducción a R
+
+
+
+
+
+---
+# Ejemplo: Venta de empresa retail
+
+
+
+Sólo para estos pocos ejemplos vamos a armar una estructura de datos típica de empresas de retail, donde se tiene columnas para el Almacen, Producto, Periodo (Año-Mes) y variables como la venta en dólares, el margen y en este caso el presupuesto.
+
+
+
+```r
+set.seed(123)
+df_1 &lt;- data.frame(
+  ALMACEN= rep(c("Mall del Sol", "Riocentro"), each= 6),
+  PRODUCTO= paste("Prod", LETTERS[1:6], sep="_"),
+  PERIODO= rep(seq.Date(from=as.Date("2015-01-01"), to=as.Date("2017-06-01"), by="month"), each=12),
+  VTA= runif(n = 360, min = 1000, max= 7000),
+  MARGEN= rnorm(n = 360, mean = 30, sd= 6)/100,
+  PPTO= runif(n = 360, min = 1000, max= 7000),
+  stringsAsFactors = FALSE
+)
+df_1 %&lt;&gt;% mutate(VTA_COSTO=VTA*(1-MARGEN))
+df_1 &lt;- as_tibble(df_1)
+```
+
+
+
+
+---
+# Ejemplo: Venta de empresa retail
+
+
+
+Sólo para estos pocos ejemplos vamos a armar una estructura de datos típica de empresas de retail, donde se tiene columnas para el Almacen, Producto, Periodo (Año-Mes) y variables como la venta en dólares, el margen y en este caso el presupuesto.
+
+
+
+```r
+df_1
+```
+
+```
+## # A tibble: 360 x 7
+##    ALMACEN      PRODUCTO PERIODO      VTA MARGEN  PPTO VTA_COSTO
+##    &lt;chr&gt;        &lt;chr&gt;    &lt;date&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1 Mall del Sol Prod_A   2015-01-01 2725.  0.236 3354.     2082.
+##  2 Mall del Sol Prod_B   2015-01-01 5730.  0.376 2032.     3577.
+##  3 Mall del Sol Prod_C   2015-01-01 3454.  0.279 2918.     2490.
+##  4 Mall del Sol Prod_D   2015-01-01 6298.  0.248 3481.     4736.
+##  5 Mall del Sol Prod_E   2015-01-01 6643.  0.286 5556.     4744.
+##  6 Mall del Sol Prod_F   2015-01-01 1273.  0.288 2631.      906.
+##  7 Riocentro    Prod_A   2015-01-01 4169.  0.367 1693.     2640.
+##  8 Riocentro    Prod_B   2015-01-01 6355.  0.305 1176.     4416.
+##  9 Riocentro    Prod_C   2015-01-01 4309.  0.345 5841.     2821.
+## 10 Riocentro    Prod_D   2015-01-01 3740.  0.270 3881.     2730.
+## # ... with 350 more rows
+```
+
+
+
+---
+# Funciones para rangos de filas
+
+
+Obtener el *Ramking mensual de productos más vendidos por almacén*
+
+
+
+```r
+df_1 %&gt;%
+  arrange(ALMACEN, PERIODO) %&gt;%
+  group_by(ALMACEN, PERIODO) %&gt;%
+  mutate(Prod_rank = min_rank(desc(VTA)))
+```
+
+```
+## # A tibble: 360 x 8
+## # Groups:   ALMACEN, PERIODO [60]
+##    ALMACEN      PRODUCTO PERIODO      VTA MARGEN  PPTO VTA_COSTO Prod_rank
+##    &lt;chr&gt;        &lt;chr&gt;    &lt;date&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;int&gt;
+##  1 Mall del Sol Prod_A   2015-01-01 2725.  0.236 3354.     2082.         5
+##  2 Mall del Sol Prod_B   2015-01-01 5730.  0.376 2032.     3577.         3
+##  3 Mall del Sol Prod_C   2015-01-01 3454.  0.279 2918.     2490.         4
+##  4 Mall del Sol Prod_D   2015-01-01 6298.  0.248 3481.     4736.         2
+##  5 Mall del Sol Prod_E   2015-01-01 6643.  0.286 5556.     4744.         1
+##  6 Mall del Sol Prod_F   2015-01-01 1273.  0.288 2631.      906.         6
+##  7 Mall del Sol Prod_A   2015-02-01 5065.  0.306 1692.     3517.         2
+##  8 Mall del Sol Prod_B   2015-02-01 4436.  0.246 1776.     3343.         3
+##  9 Mall del Sol Prod_C   2015-02-01 1618.  0.221 5432.     1260.         5
+## 10 Mall del Sol Prod_D   2015-02-01 6399.  0.420 5543.     3712.         1
+## # ... with 350 more rows
+```
+
+
+
+
+---
+# Funciones para rangos de filas
+
+
+
+Porcentaje de venta menor a la venta del producto, para cada almacén y mes
+
+
+
+```r
+df_1 %&gt;%
+  arrange(ALMACEN, PERIODO) %&gt;%
+  group_by(ALMACEN, PERIODO) %&gt;%
+  mutate(Porc = percent_rank(VTA))
+```
+
+```
+## # A tibble: 360 x 8
+## # Groups:   ALMACEN, PERIODO [60]
+##    ALMACEN      PRODUCTO PERIODO      VTA MARGEN  PPTO VTA_COSTO  Porc
+##    &lt;chr&gt;        &lt;chr&gt;    &lt;date&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+##  1 Mall del Sol Prod_A   2015-01-01 2725.  0.236 3354.     2082.   0.2
+##  2 Mall del Sol Prod_B   2015-01-01 5730.  0.376 2032.     3577.   0.6
+##  3 Mall del Sol Prod_C   2015-01-01 3454.  0.279 2918.     2490.   0.4
+##  4 Mall del Sol Prod_D   2015-01-01 6298.  0.248 3481.     4736.   0.8
+##  5 Mall del Sol Prod_E   2015-01-01 6643.  0.286 5556.     4744.   1  
+##  6 Mall del Sol Prod_F   2015-01-01 1273.  0.288 2631.      906.   0  
+##  7 Mall del Sol Prod_A   2015-02-01 5065.  0.306 1692.     3517.   0.8
+##  8 Mall del Sol Prod_B   2015-02-01 4436.  0.246 1776.     3343.   0.6
+##  9 Mall del Sol Prod_C   2015-02-01 1618.  0.221 5432.     1260.   0.2
+## 10 Mall del Sol Prod_D   2015-02-01 6399.  0.420 5543.     3712.   1  
+## # ... with 350 more rows
+```
+
+
+
+---
+# Funciones para rangos de filas
+
+
+
+Para el almacén y producto, la venta acumulada a cada cierre de mes empezando desde enero 
+
+
+
+```r
+df_1 %&gt;%
+  arrange(ALMACEN, PRODUCTO, PERIODO) %&gt;%
+  group_by(ALMACEN, PRODUCTO, ANIO=lubridate::year(PERIODO)) %&gt;%
+  mutate(VTA_ACUM = cumsum(VTA)) 
+```
+
+```
+## # A tibble: 360 x 9
+## # Groups:   ALMACEN, PRODUCTO, ANIO [36]
+##    ALMACEN      PRODUCTO PERIODO      VTA MARGEN  PPTO VTA_COSTO  ANIO VTA_ACUM
+##    &lt;chr&gt;        &lt;chr&gt;    &lt;date&gt;     &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+##  1 Mall del Sol Prod_A   2015-01-01 2725.  0.236 3354.     2082.  2015    2725.
+##  2 Mall del Sol Prod_A   2015-02-01 5065.  0.306 1692.     3517.  2015    7791.
+##  3 Mall del Sol Prod_A   2015-03-01 4934.  0.275 6200.     3577.  2015   12725.
+##  4 Mall del Sol Prod_A   2015-04-01 5551.  0.274 3531.     4032.  2015   18276.
+##  5 Mall del Sol Prod_A   2015-05-01 2596.  0.353 1707.     1679.  2015   20872.
+##  6 Mall del Sol Prod_A   2015-06-01 4991.  0.253 5991.     3730.  2015   25862.
+##  7 Mall del Sol Prod_A   2015-07-01 5261.  0.279 5498.     3791.  2015   31124.
+##  8 Mall del Sol Prod_A   2015-08-01 1617.  0.438 1712.      910.  2015   32741.
+##  9 Mall del Sol Prod_A   2015-09-01 5694.  0.310 5320.     3926.  2015   38434.
+## 10 Mall del Sol Prod_A   2015-10-01 3464.  0.287 5157.     2470.  2015   41899.
+## # ... with 350 more rows
+```
+
+
+
+
+
+---
+# Funciones para rangos de filas
+
+
+
+Para el almacén y producto, el promedio de venta mensual del año a cada cierre de mes empezando desde enero y el promedio de los últimos 3 meses
+
+
+
+```r
+library(RcppRoll)
+df_1 %&gt;% 
+  arrange(ALMACEN, PRODUCTO, PERIODO) %&gt;%
+  group_by(ALMACEN, PRODUCTO, ANIO=lubridate::year(PERIODO)) %&gt;%
+  mutate(PROM_ESTE_ANIO = cummean(VTA) ) %&gt;% 
+  group_by(ALMACEN, PRODUCTO) %&gt;%
+  mutate(PROM_ULT_TRIM = roll_mean(VTA, n = 3, fill= NA, align = "right" ) ) %&gt;% 
+  select(ALMACEN, PRODUCTO, VTA, PROM_ULT_TRIM) %&gt;% head(3)
+```
+
+```
+## # A tibble: 3 x 4
+## # Groups:   ALMACEN, PRODUCTO [1]
+##   ALMACEN      PRODUCTO   VTA PROM_ULT_TRIM
+##   &lt;chr&gt;        &lt;chr&gt;    &lt;dbl&gt;         &lt;dbl&gt;
+## 1 Mall del Sol Prod_A   2725.           NA 
+## 2 Mall del Sol Prod_A   5065.           NA 
+## 3 Mall del Sol Prod_A   4934.         4242.
+```
+
+
+
+---
+class: tiny
+# Funciones para rangos de filas
+
+
+
+Ahora lo mismo pero también, para cada producto-almacén, la diferencia de la venta del mes versus el mes anterior
+
+
+
+```r
+df_1 %&gt;%
+  arrange(ALMACEN, PRODUCTO, PERIODO) %&gt;%
+  group_by(ALMACEN, PRODUCTO, ANIO=lubridate::year(PERIODO)) %&gt;%
+  mutate(PROM_ESTE_ANIO = cummean(VTA) ) %&gt;% 
+  select(ALMACEN, PRODUCTO, VTA) %&gt;% 
+  group_by(ALMACEN, PRODUCTO) %&gt;%
+  mutate(PROM_ULT_TRIM = roll_mean(VTA, n = 3, fill= NA, align = "right" ) ,
+         DIFF_VS_MES_ANT= VTA - lag(VTA),
+         PORC_DIFF_VS_MES_ANT= (VTA - lag(VTA))/lag(VTA)
+         ) %&gt;% 
+  head(3)
+```
+
+```
+## Adding missing grouping variables: `ANIO`
+```
+
+```
+## # A tibble: 3 x 7
+## # Groups:   ALMACEN, PRODUCTO [1]
+##    ANIO ALMACEN   PRODUCTO   VTA PROM_ULT_TRIM DIFF_VS_MES_ANT PORC_DIFF_VS_MES~
+##   &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;    &lt;dbl&gt;         &lt;dbl&gt;           &lt;dbl&gt;             &lt;dbl&gt;
+## 1  2015 Mall del~ Prod_A   2725.           NA              NA            NA     
+## 2  2015 Mall del~ Prod_A   5065.           NA            2340.            0.859 
+## 3  2015 Mall del~ Prod_A   4934.         4242.           -131.           -0.0259
+```
+
+
+
+
+
+---
+class: inverse, center, middle, hide_logo
+
+# FIN
+
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
