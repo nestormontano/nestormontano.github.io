@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Análisis exploratorio de datos (EDA): Gráficos</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Zulemma Bazurto / Néstor Montaño" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra_fit-screen/fit-screen.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Análisis exploratorio de datos (EDA): Gráficos
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+### Sociedad Ecuatoriana de Estadística
+### Octubre-2020
+
+---
+
+class: hide_logo 
+background-image: url("Imagenes/Logo-BanderaCorregida_con_curva_peque.png")
+
+
+&lt;style type="text/css"&gt;
+.huge .remark-code { /*Change made here*/
+  font-size: 150% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 75% !important;
+}
+
+&lt;/style&gt;
+
+<div>
+<style type="text/css">.xaringan-extra-logo {
+width: 800px;
+height: 50px;
+z-index: 0;
+background-image: url(Imagenes/Top_Logo.png);
+background-size: contain;
+background-repeat: no-repeat;
+position: absolute;
+top:0;right:0.4em;
+}
+</style>
+<script>(function () {
+  let tries = 0
+  function addLogo () {
+    if (typeof slideshow === 'undefined') {
+      tries += 1
+      if (tries < 10) {
+        setTimeout(addLogo, 100)
+      }
+    } else {
+      document.querySelectorAll('.remark-slide-content:not(.title-slide):not(.inverse):not(.hide_logo)')
+        .forEach(function (slide) {
+          const logo = document.createElement('div')
+          logo.classList = 'xaringan-extra-logo'
+          logo.href = null
+          slide.appendChild(logo)
+        })
+    }
+  }
+  document.addEventListener('DOMContentLoaded', addLogo)
+})()</script>
+</div>
+
+
+---
+
+.footnote[
+**Nota:**  
+Con *Alt + F* o  *Option + F* puede hacer que estas dapositivas ocupen todo el navegador (es decir que se ignore el aspecto de diapositiva que tiene por default la presentación)
+]
+
+
+
+---
+class: inverse, center, middle
+
+# Análisis exploratorio de datos
+  
+
+
+
+---
+
+# Análisis exploratorio de datos
+
+El análisis exploratorio es un enfoque en el que se "deja hablar a los datos" para que ellos nos den las pistas necesarias para construir modelos o incluso desarrollar supuestos o conclusiones.  
+
+--
+
+Conocer los datos "como a la palma de tu mano", este es el primer beneficio del EDA, algo útil seas analista comercial, de marketing, científico, ingeniero o cualquier puesto donde analizar datos sea fundamental.  
+
+--
+
+Por conocer, nos referimos a: Comprende las correlaciones entre los elementos, descubrir la estructura subyacente de los datos, detectar valores atípicos y anomalías, etc.  
+
+--
+
+Por "dejar a los datos hablar" nos referimos a permitir que los datos sugieran los modelos que se adaptan mejor a ellos datos, encontrar variables importantes o más relacionadas, desarrollar modelos parsimoniosos, etc.
+
+
+
+
+---
+# Importancia del Análisis exploratorio de datos
+
+Partamos del conocido set de datos Anscombe's quartet
+
+
+```
+##    x1 x2 x3 x4    y1   y2    y3    y4
+## 1  10 10 10  8  8.04 9.14  7.46  6.58
+## 2   8  8  8  8  6.95 8.14  6.77  5.76
+## 3  13 13 13  8  7.58 8.74 12.74  7.71
+## 4   9  9  9  8  8.81 8.77  7.11  8.84
+## 5  11 11 11  8  8.33 9.26  7.81  8.47
+## 6  14 14 14  8  9.96 8.10  8.84  7.04
+## 7   6  6  6  8  7.24 6.13  6.08  5.25
+## 8   4  4  4 19  4.26 3.10  5.39 12.50
+## 9  12 12 12  8 10.84 9.13  8.15  5.56
+## 10  7  7  7  8  4.82 7.26  6.42  7.91
+## 11  5  5  5  8  5.68 4.74  5.73  6.89
+```
+
+
+---
+# Importancia del Análisis exploratorio de datos
+
+Cargar paquetes
+
+
+```r
+library(tidyverse)
+library(magrittr)
+```
+
+
+---
+# Importancia del EDA
+
+Partamos del conocido set de datos Anscombe's quartet  
+Poniendo el set en un formato correcto
+
+
+```
+##     X     Y CASO
+## 1  10  8.04   C1
+## 2   8  6.95   C1
+## 3  13  7.58   C1
+## 4   9  8.81   C1
+## 5  11  8.33   C1
+## 6  14  9.96   C1
+## 7   6  7.24   C1
+## 8   4  4.26   C1
+## 9  12 10.84   C1
+## 10  7  4.82   C1
+## 11  5  5.68   C1
+## 12 10  9.14   C2
+## 13  8  8.14   C2
+## 14 13  8.74   C2
+## 15  9  8.77   C2
+```
+
+
+
+---
+# Importancia del EDA
+
+Partamos del conocido set de datos Anscombe's quartet  
+Poniendo el set en un formato correcto  
+Obteniendo la correlación de los 4 casos sería:
+
+
+```
+## # A tibble: 4 x 2
+##   CASO  CORRELACION
+##   &lt;fct&gt;       &lt;dbl&gt;
+## 1 C1          0.816
+## 2 C2          0.816
+## 3 C3          0.816
+## 4 C4          0.817
+```
+--
+
+Parece una correlación fuerte, sin embargo al graficar los datos...
+
+
+---
+# Importancia del EDA
+
+En el set de datos Anscombe's quartet tenemos correlaciones de 0.81, sin embargo al graficar:
+
+
+&lt;img src="04_Graficos_AnalisisExploratorio_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+class: inverse, center, middle
+
+# Cambio de Paradigma
+
+No sólo podemos confiar en estadísticas tabulares sino que **debemos adentrarnos en nuetros datos para entenderlos completamente**
+
+
+
+
+---
+# En Resumen
+
+- Permite entender los datos  
+
+--
+
+- Sirve para examinar las variables y sus interacciones antes de aplicar las técnicas  
+
+--
+
+- Es util para encontrar errores en el set de datos  
+
+--
+
+- Se realiza mediante estadísticos descriptivos y principalmente gráficos  
+
+--
+
+- Suele ser un proceso iterativo:
+  + se plantea una pregunta
+  + se grafica o se crea una tabla para responder
+  + se obtiene una idea o una nueva pregunta del paso anterior  
+
+--
+
+- Proporciona pistas o intuición (la típica frase marketera: **get insights**)
+
+
+---
+# Análisis exploratorio de datos y Gráficos Estadísticos
+
+El EDA es una forma de abordar los análisis, los gráficos estadísticos por otro lado son un conjunto de técnicas que nos permiten caracterizar un aspecto de los datos en un gráfico.  
+
+--
+
+Ambos términos están intimamente relacionados, sin embargo lo que se debe tener claro es que el EDA es un enfoque para analizar datos la cual se basa en gran parte en el uso de los **gráficos estadísticos**.  
+
+
+--
+Un par de referencias históricas sobre EDA:  
+- Tukey, John (1977), Exploratory Data Analysis, Addison-Wesley.  
+- Velleman, Paul and Hoaglin, David (1981), The ABC's of EDA: Applications, Basics, and Computing of Exploratory Data Analysis, Duxbury.  
+
+
+--
+Un par de referencias sobre gráficos estadísticos:
+- Wilkinson (2005). The Grammar of Graphics. 2nd ed. Statistics and Computing. Springer.  
+- Wickham (2010). A Layered Grammar of Graphics. Journal of Computational and Graphical Statistics
+
+
+
+
+---
+class: inverse, center, middle
+
+# Introducción a ggplot 2
+
+
+
+---
+# Gramar of Graphics - ggplot2
+
+
+&gt; "good grammar is just the first step in creating a good sentence" Wickham  
+
+
+--
+La gramática de los gráficos permite disgregarlos en varias componentes, en breve podemos decir que un gráfico toma los datos y asigna una o más variables a los atributos estéticos (componentes, color, forma, tamaño) de los objetos geométricos (puntos, líneas, barras) que se ha elegido para representarlos. Todo esto contenido en un layer que puede combinado con otros para obtener gráficos más avanzados.  
+
+--
+
+Un gráfico también puede incluir transformaciones estadísticas de los datos y se le asocia un sistema de coordenadas de la gráfica. Finalmente, se puede tener "facetas" que se pueden usar para generar el gráfico para diferentes subconjuntos de datos.  
+
+
+
+
+---
+background-image: url(Imagenes/ggplot-grammar-of-graphics-stack-1_rectangular.png)
+background-size: cover
+class: center, bottom, inverse
+
+
+
+
+
+---
+# Entendiendo ggplot2 
+
+Vamos a entender la idea detrás de ggplot con el gráfico de *Anscombe's quartet* que revisamos anteriormente.  
+
+
+
+&lt;img src="04_Graficos_AnalisisExploratorio_files/figure-html/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+
+---
+# Entendiendo ggplot2
+
+Lo primero será comprender las componentes del gráfico bajo el enfoque ggplot2: Layer 1
+
+&lt;img src="Imagenes/entendiendo_ggplot_01.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Entendiendo ggplot2
+
+Lo primero será comprender las componentes del gráfico bajo el enfoque ggplot2: Layer 1
+
+&lt;img src="Imagenes/entendiendo_ggplot_02.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Entendiendo ggplot2
+
+Lo primero será comprender las componentes del gráfico bajo el enfoque ggplot2: Layer 1
+
+&lt;img src="Imagenes/entendiendo_ggplot_03.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Entendiendo ggplot2
+
+Lo primero será comprender las componentes del gráfico bajo el enfoque ggplot2: Layer 2
+
+&lt;img src="Imagenes/entendiendo_ggplot_04.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Entendiendo ggplot2
+
+Lo primero será comprender las componentes del gráfico bajo el enfoque ggplot2
+
+&lt;img src="Imagenes/entendiendo_ggplot_05.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+
+
+---
+# Entendiendo ggplot2
+
+En resumen el Gráfico de puntos entre X y Y, en el dataset: Anscombe's quartet tiene las siguientes componentes:
+- Data: df_anscombe  
+- Layer 1:
+  + Atributos estéticos: x, y
+  + Geometría: Puntos
+- Layer 2:
+  + Atributos estéticos: x, y
+  + Geometría: línea
+  + Transformación Estadística: Regresión lineal
+  
+
+Todo esto bajo un sistemas de coordenadas cartesiana y un template predefinido.
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Partimos de este set de datos que viene dentro del paquete datasets de R
+
+
+```r
+anscombe
+```
+
+```
+##    x1 x2 x3 x4    y1   y2    y3    y4
+## 1  10 10 10  8  8.04 9.14  7.46  6.58
+## 2   8  8  8  8  6.95 8.14  6.77  5.76
+## 3  13 13 13  8  7.58 8.74 12.74  7.71
+## 4   9  9  9  8  8.81 8.77  7.11  8.84
+## 5  11 11 11  8  8.33 9.26  7.81  8.47
+## 6  14 14 14  8  9.96 8.10  8.84  7.04
+## 7   6  6  6  8  7.24 6.13  6.08  5.25
+## 8   4  4  4 19  4.26 3.10  5.39 12.50
+## 9  12 12 12  8 10.84 9.13  8.15  5.56
+## 10  7  7  7  8  4.82 7.26  6.42  7.91
+## 11  5  5  5  8  5.68 4.74  5.73  6.89
+```
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+La primer parte suele ser manipular nuestros datos hasta tener nuestro dataframe ordenado y listo para ser graficado, en este caso simplemente haríamos:
+
+
+```r
+df_anscombe &lt;- data.frame(
+  X     = with(anscombe, c(x1, x2, x3, x4)),
+  Y     = with(anscombe, c(y1, y2, y3, y4)),
+  CASO = rep(paste0("C", 1:4), each = 11)
+)
+```
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Construiremos el gráfico poco a poco, primero diremos como mapear los atributos/características estéticas **x**, y **y**. *El resultado de este código es un layer vacío con las variables X y Y en las componentes*
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X, y= Y)) 
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_01-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Ahora aumentamos la componente geométrica que en este caso son puntos:
+
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X, y= Y)) +
+* geom_point()
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_02-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Podemos ver este gráfico para cada valor que tenemos en la variable CASO
+
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point() +
+* facet_wrap( "CASO")
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_03-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y aumentar un layer donde se realice un modelo (en este caso una regresión lineal simple)
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point() +
+  facet_wrap( "CASO")  +
+* geom_smooth(method = "lm", se = FALSE)
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_04-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Finalmente, ponemos un título al gráfico
+
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point() +
+  facet_wrap( "CASO")  +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+  title = "Gráfico de puntos entre X y Y, 
+*      en el dataset: Anscombe's quartet")
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_05-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+La potencia de ggplot es que se puede mapear variables a varios atributos estéticos, por ejemplo el punto tiene atributo color, shape.
+
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point(
+*   aes(color= CASO, shape= CASO)) +
+  labs(
+  title = "Gráfico de puntos entre X y Y, 
+       en el dataset: Anscombe's quartet")
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_06-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Jugando un poco más: color, shape, facet
+
+
+.pull-left[
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point(
+    aes(color= CASO, shape= CASO)) +
+* facet_wrap( "CASO")  +
+  labs(
+  title = "Gráfico de puntos entre X y Y, 
+       en el dataset: Anscombe's quartet")
+```
+]
+
+.pull-right[
+![](04_Graficos_AnalisisExploratorio_files/figure-html/plot_07-out-1.png)&lt;!-- --&gt;
+]
+
+
+
+
+
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y nuevamente agregando la linea de regresión lineal, pero esta vez con el atributo color
+
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point( aes(color= CASO, shape= CASO)) +  
+* geom_smooth( aes(color= CASO), method = "lm", se = FALSE) +
+  facet_wrap( "CASO")  +
+  labs(title = "Gráfico de puntos entre X y Y, en el dataset: Anscombe's quartet")
+```
+
+
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y nuevamente agregando la linea de regresión lineal, pero esta vez con el atributo color
+
+&lt;img src="04_Graficos_AnalisisExploratorio_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y puedo realizar otras cosas como aplicar "themas" predefinidos como
+
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point( aes(color= CASO, shape= CASO)) +  
+  facet_wrap( "CASO")  +
+  geom_smooth( aes(color= CASO), method = "lm", se = FALSE) + 
+  labs(title = "Gráfico de puntos entre X y Y, en el dataset: Anscombe's quartet") +
+* theme_bw()
+```
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y puedo realizar otras cosas como aplicar "themas" predefinidos como
+
+&lt;img src="04_Graficos_AnalisisExploratorio_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y puedo realizar otras cosas como aplicar "themas" predefinidos como
+
+
+```r
+ggplot(df_anscombe, aes(x= X,y= Y)) +
+  geom_point( aes(color= CASO, shape= CASO)) +  
+  facet_wrap( "CASO")  +
+  geom_smooth( aes(color= CASO), method = "lm", se = FALSE) + 
+  labs(title = "Gráfico de puntos entre X y Y, en el dataset: Anscombe's quartet") +
+* theme_minimal()
+```
+
+
+
+---
+# Entendiendo ggplot2 - Al fin código!
+
+Y puedo realizar otras cosas como aplicar "themas" predefinidos como
+
+&lt;img src="04_Graficos_AnalisisExploratorio_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+# Algunas geometrías y atributos
+
+Algunas geometrías (geom) disponibles junto a sus principales atributos (aes)  
+
+
+ Geom	             |    Descripción	                                    |   aes()
+-------------------|----------------------------------------------------|-----------------------
+`geom_histogram`	 |  Histograma                                        |	`x`
+`geom_bar`         |	Gráfico de barras                                 |	`x`
+`geom_density`     |  Gráfico de densidad (histograma suavizado)        | `x`
+`geom_boxplot`     | 	Boxplot                                           | `x, y`
+`geom_line`	       |  Dibujar una línea ordenando los valores de x      | `x, y`
+`geom_path`	       |  Dibujar una línea en el orden de aparición de x   | `x, y`
+`geom_point`	     |  Gráfico de dispersión          	                  | `x, y`
+
+
+
+---
+# Algunas geometrías y atributos
+
+Algunas geometrías (geom) disponibles junto a sus principales atributos (aes)  
+
+
+ Geom	             |    Descripción	                                    |   aes()
+-------------------|----------------------------------------------------|-----------------------
+`geom_smooth`	     |  Agrega un modelo y su intervalo de confianza      | `x, y`
+`geom_bin2d` 	     |  Dibuja rectángulos y pinta según cantidad de datos| `x, y`
+`geom_ribbon`	     |  Dibujar intervalos para cada valor de x           |	`ymin, ymax`
+`geom_errorbar`    |	Barras de error                                   | `ymin, ymax`
+`geom_text`	       |  Agregar texto al gráfico                          | `x, y, label`
+`geom_label`	     |  Agregar texto con rectángulo al gráfico           | `x, y, label`
+`geom_tile`        |  Permite crear rectángulos coloreados              | `x, y, fill`
+
+
+
+
+---
+# Horas no presenciales
+
+Se compartirá más de 10 horas de un curso específico sobre exploración de datos con R, el mismo que se enfoca en cómo analizar cada tipo de variables con las que nos encontramos en un análisis: numéricas, nominales, ordinales, etc. así como sus interacciones.  
+
+Se usará ggplot2 para todo lo que tiene que ver con gráficos estáticos, adicional se usará plotly para gráficos dinámicos.  
+
+Recuerden que luego tendrá un curso de desarrollo de aplicaciones con Shiny Apps herramienta que les permite a ustedes realizar aplicaciones interactivas que faciliten la exploración de datos a los usuarios finales.
+
+
+
+
+---
+class: inverse, center, middle, hide_logo
+
+# FIN
+
+## Curso: Bases para Data Science - Estadística, R y Python
+### Zulemma Bazurto / Néstor Montaño
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
